@@ -1,0 +1,205 @@
+# Étude de la confidentialité dans les preuves ZK appliquées aux données médicales
+
+Ce projet présente l'étude, l'implémentation et l'évaluation d'un prototype de système de **preuves à connaissance nulle (ZKP - Zero-Knowledge Proofs)** appliqué à la confidentialité des dossiers médicaux. 
+
+L'application web démontre un scénario concret impliquant un **Hôpital (prouveur)** et un **Assureur (vérifieur)**. L'objectif est de certifier cryptographiquement qu'une température corporelle d'un patient est inférieure à 38 °C ($T < 38\text{ }^\circ\text{C}$) sans jamais divulguer sa valeur exacte.
+
+---
+
+## 🎓 Contexte Académique
+
+* **Institution :** Université de Yaoundé I (Faculté des Sciences, Département d'Informatique)
+* **Niveau :** Master 1 Sécurité des Systèmes Informatiques (SSI)
+* **Unité d'Enseignement :** INF4258 — UE Projet M1 Sécurité
+* **Superviseur :** Dr EKODECK Stéphane
+* **Année académique :** 2025–2026
+
+### Membres du projet
+
+| Nom et Prénom | Matricule |
+| :--- | :--- |
+| **KEMAJOU KOUAGO STEVE ANDERSON** | 21T2640 |
+| **MAHACHU FONGANG AURELIE GRACIANE** | 22T2924 |
+
+---
+
+## 🛠️ Spécifications Cryptographiques
+
+L'application met en œuvre un **Range Proof binaire** fondé sur des protocoles de l'état de l'art :
+* **Engagements de Pedersen :** $C = g^v \cdot h^r \bmod p$, offrant un masquage parfait (*perfect hiding*) et une liaison calculatoire (*computational binding*).
+* **Preuves OR de Cramer-Damgård-Schoenmakers (CDS) :** Utilisées pour prouver l'appartenance de chaque bit décomposé à l'ensemble $\{0, 1\}$.
+* **Protocole Sigma de Schnorr :** Rendu non interactif par l'application de l'**heuristique de Fiat-Shamir** (NIZKP).
+* **Groupe mathématique :** Multiplicatif de type premier sûr **RFC 3526 Group 14** (clés de 2048 bits) pour se prémunir des attaques sur le logarithme discret.
+
+---
+
+## 🏗️ Architecture Réelle du Projet (MVC)
+
+Voici l'arborescence des sources réelles de l'application (les fichiers temporaires et les dépendances du dossier `venv/` sont masqués pour des raisons de clarté) :
+
+```text
+zk_medical_proof/
+├── app/
+│   ├── controllers/
+│   │   └── __init__.py
+│   ├── models/                 # Modèles de données (Base de données SQLAlchemy)
+│   │   ├── audit_log.py        # Journalisation d'audit de sécurité
+│   │   ├── db.py               # Initialisation de SQLAlchemy
+│   │   ├── hospital.py         # Modèle des hôpitaux partenaires
+│   │   ├── __init__.py
+│   │   ├── insurer.py          # Modèle des organismes assureurs
+│   │   ├── patient.py          # Modèle des données patients
+│   │   ├── proof.py            # Modèle des preuves ZK générées
+│   │   ├── user.py             # Modèle des utilisateurs de la plateforme
+│   │   └── verification.py     # Modèle des résultats de vérification
+│   ├── utils/                  # Moteur cryptographique et outils d'évaluation
+│   │   ├── bulletproofs_handler.py # Implémentation du Range Proof binaire (Pedersen/CDS/Sigma)
+│   │   ├── decimal_encoder.py  # Gestion de l'encodage décimal pour la précision médicale
+│   │   ├── __init__.py
+│   │   └── metrics_collector.py # Collecte automatique des métriques de performance (temps,taille)
+│   ├── views/                  # Contrôleurs applicatifs (Blueprints Flask)
+│   │   ├── admin_views.py      # Panel d'administration et journal d'audit
+│   │   ├── auth_views.py       # Gestion de l'authentification et des rôles
+│   │   ├── hospital_views.py   # Gestion de la saisie patient et génération de preuves ZK
+│   │   ├── __init__.py
+│   │   └── insurer_views.py    # Module de soumission et de vérification des preuves
+│   └── templates/              # Interfaces graphiques de la plateforme (Jinja2)
+│       ├── admin/              # Vues de l'administrateur
+│       ├── auth/               # Écrans de connexion et d'inscription
+│       ├── hospital/           # Écrans de l'hôpital (Formulaire patient, génération de ZKP)
+│       ├── insurer/            # Écrans de l'assureur (Soumission et statut de vérification)
+│       ├── a_propos.html       # Présentation du projet
+│       ├── base.html           # Squelette HTML principal (Thème CSS Vert Médical)
+│       ├── contact.html        # Formulaire de contact
+│       ├── documentation.html  # Guide d'utilisation et mathématiques du protocole
+│       └── macros.html         # Composants d'interface réutilisables
+├── config/
+│   ├── __init__.py
+│   └── settings.py             # Fichier de configuration de l'application Flask
+├── instance/                   # [Exclu de Git] Contient la base de données SQLite zk_medical.db
+├── requirements.txt            # Liste des dépendances du projet
+├── run.py                      # Script de démarrage de l'application
+└── .env.example                # Modèle de configuration pour le fichier .env (clés secrètes)
+```
+---
+
+## 📈 Métriques de Performance
+
+Les évaluations expérimentales ont été réalisées sur un jeu de données de **10 patients**, dont **8 satisfont le prédicat médical** :
+
+**T < 38°C**
+
+Les performances moyennes observées sont les suivantes :
+
+| Métrique | Valeur moyenne |
+|-----------|----------------|
+| Temps de génération d'une preuve | **2 849,75 ms** |
+| Temps de vérification d'une preuve | **2 862,72 ms** |
+| Taille d'une preuve | **71,73 KB** |
+
+### Observations
+
+- La taille des preuves varie entre **59 KB** et **102 KB** selon la précision décimale de la température.
+- Le temps de calcul est principalement dominé par les exponentiations modulaires sur le groupe **RFC 3526 Group 14 (2048 bits)**.
+- L'implémentation étant réalisée en Python pur à des fins pédagogiques, les performances pourraient être significativement améliorées à l'aide de bibliothèques cryptographiques natives ou de constructions fondées sur les courbes elliptiques.
+
+---
+
+## 🚀 Installation et Lancement
+
+### Prérequis
+
+- Python **3.12** ou version supérieure
+- Git
+- Environnement virtuel Python (`venv`)
+
+### 1. Clonage du dépôt
+
+```bash
+git clone https://github.com/votre-nom-utilisateur/zk_medical_proof.git
+cd zk_medical_proof
+```
+
+### 2. Création de l'environnement virtuel
+
+#### Linux / macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Installation des dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configuration de l'environnement
+
+Créer un fichier `.env` à partir du modèle fourni :
+
+```bash
+cp .env.example .env
+```
+
+Puis renseigner les paramètres nécessaires :
+
+```env
+SECRET_KEY=votre_cle_secrete
+FLASK_ENV=development
+```
+
+### 5. Lancement de l'application
+
+```bash
+python run.py
+```
+
+L'application sera accessible à l'adresse :
+
+```text
+http://127.0.0.1:5000
+```
+
+---
+
+## 🔐 Fonctionnement du Protocole
+
+1. L'hôpital saisit la température du patient.
+2. La température est encodée puis engagée à l'aide d'un engagement de Pedersen.
+3. Une preuve de connaissance nulle est générée pour démontrer que :
+
+   **T < 38°C**
+
+4. La preuve est transmise à l'assureur.
+5. L'assureur vérifie la preuve sans jamais accéder à la température réelle.
+6. Le résultat de vérification est enregistré dans le système.
+
+---
+
+## 📚 Références Scientifiques
+
+1. Goldwasser, S., Micali, S., Rackoff, C. — *The Knowledge Complexity of Interactive Proof Systems*.
+2. Pedersen, T. P. — *Non-Interactive and Information-Theoretic Secure Verifiable Secret Sharing*.
+3. Cramer, R., Damgård, I., Schoenmakers, B. — *Proofs of Partial Knowledge and Simplified Design of Witness Hiding Protocols*.
+4. Schnorr, C. P. — *Efficient Signature Generation by Smart Cards*.
+5. Fiat, A., Shamir, A. — *How to Prove Yourself: Practical Solutions to Identification and Signature Problems*.
+6. Bünz, B. et al. — *Bulletproofs: Short Proofs for Confidential Transactions and More*.
+
+---
+## 📄 Licence
+
+Ce projet est distribué sous licence libre à des fins pédagogiques et académiques.
+
+Vous êtes libres de consulter, utiliser, modifier et redistribuer le code source en conservant les références aux auteurs du projet.
+
+© 2025–2026 KEMAJOU K. S. Anderson & MAHACHU F. A. Graciane
+
