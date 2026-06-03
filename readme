@@ -116,7 +116,7 @@ Les performances moyennes observées sont les suivantes :
 ### 1. Clonage du dépôt
 
 ```bash
-git clone https://github.com/votre-nom-utilisateur/zk_medical_proof.git
+git clone git@github.com:mahachu/zk_medical_proof.git
 cd zk_medical_proof
 ```
 
