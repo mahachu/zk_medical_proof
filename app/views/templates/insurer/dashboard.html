@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "macros.html" import insurer_sidebar with context %}
+{% block title %}Dashboard — {{ insurer.nom }}{% endblock %}
+{% block sidebar %}{{ insurer_sidebar(insurer, 'dashboard') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb">Assureur / Tableau de bord</div>
+  <h1 class="page-title">{{ insurer.nom }}</h1>
+  <p class="page-subtitle">{{ insurer.ville }}, {{ insurer.pays }} — Vérifieur ZK</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Vérifications</div>
+    <div class="stat-value">{{ total_ver }}</div>
+    <div class="stat-sub">effectuées</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Valides</div>
+    <div class="stat-value" style="color:var(--accent)">{{ valid_ver }}</div>
+    <div class="stat-sub">prédicats satisfaits</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Disponibles</div>
+    <div class="stat-value">{{ available_proofs|length }}</div>
+    <div class="stat-sub">preuves à vérifier</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Taux succès</div>
+    <div class="stat-value">
+      {% if total_ver > 0 %}{{ (valid_ver/total_ver*100)|round(0)|int }}%{% else %}—{% endif %}
+    </div>
+    <div class="stat-sub">preuves valides</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Actions rapides</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem">
+      <a href="{{ url_for('insurer.verify') }}" class="btn btn-accent">
+        ✓ Vérifier une preuve ZK
+      </a>
+      <a href="{{ url_for('insurer.verifications_list') }}" class="btn btn-outline">
+        ◈ Historique des vérifications
+      </a>
+    </div>
+    {% if available_proofs %}
+    <div class="zk-divider">Preuves disponibles</div>
+    <div style="font-size:0.75rem;color:var(--ink3);line-height:2">
+      {% for pr in available_proofs[:5] %}
+      <div style="display:flex;justify-content:space-between;align-items:center; margin-bottom:0.5rem">
+        <span class="mono">{{ pr.proof_uid[:16] }}…</span>
+        <a href="{{ url_for('insurer.verify') }}" style="font-size:0.65rem;padding:0.15rem 0.45rem;" class="btn btn-sm">Vérifier</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="flex items-center justify-between mb-4">
+      <div class="card-title" style="margin-bottom:0">Vérifications récentes</div>
+      <a  href="{{ url_for('insurer.verifications_list') }}" class="btn btn-sm btn-outline">Voir tout</a>
+    </div>
+    {% if verifications %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>UID Preuve</th><th>Résultat Vérif.</th><th>Temps Vérif. (ms)</th><th>Date Vérif.</th></tr>
+        </thead>
+        <tbody>
+          {% for v in verifications %}
+          <tr>
+            <td class="mono text-xs">{{ v.proof.proof_uid[:10] }}…</td>
+            <td>
+              <span class="badge {% if v.is_valid %}badge-success{% else %}badge-danger{% endif %}">
+                {% if v.is_valid %} Valide{% else %} Invalide{% endif %}
+              </span>
+            </td>
+            <td class="mono">{{ v.verification_time_ms|round(3) }} </td>
+            <td class="text-xs text-muted">{{ v.verified_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted text-sm">Aucune vérification effectuée.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

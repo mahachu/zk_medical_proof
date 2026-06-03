@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% from "macros.html" import hospital_sidebar with context %}
+{% block title %}Dashboard — {{ hospital.nom }}{% endblock %}
+{% block sidebar %}{{ hospital_sidebar(hospital, 'dashboard') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb">Hôpital / Tableau de bord</div>
+  <h1 class="page-title">{{ hospital.nom }}</h1>
+  <p class="page-subtitle">{{ hospital.ville }}, {{ hospital.pays }} — Prouveur ZK</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Patients</div>
+    <div class="stat-value">{{ patients|length }}</div>
+    <div class="stat-sub">enregistrés</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Preuves ZK</div>
+    <div class="stat-value">{{ total_proofs }}</div>
+    <div class="stat-sub">générées</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Prédicat</div>
+    <div class="stat-value" style="font-size:1rem;line-height:1.4">T &lt; 38°C</div>
+    <div class="stat-sub">actif</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:1.5rem">
+  <div class="card">
+    <div class="card-title">Actions rapides</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem">
+      <a href="{{ url_for('hospital.patient_new') }}" class="btn btn-accent">
+        + Nouveau patient
+      </a>
+      <a href="{{ url_for('hospital.generate_proof') }}" class="btn">
+        ⬡ Générer une preuve ZK
+      </a>
+      <a href="{{ url_for('hospital.proofs_list') }}" class="btn btn-outline">
+        ◈ Voir toutes les preuves
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Patients récents</div>
+    {% if patients %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Id</th><th>Nom Complet</th><th>Âge</th><th>Température</th></tr>
+        </thead>
+        <tbody>
+          {% for p in patients[:5] %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.full_name() }}</td>
+            <td>{{ p.age }} ans</td>
+            <td>
+              {% if p.temperature %}
+                {% set t = p.temperature_float %}
+                <span class="badge {% if t < 38 %}badge-success{% else %}badge-danger{% endif %}">
+                  {{ p.temperature }}°C
+                </span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-muted text-sm">Aucun patient enregistré.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if proofs %}
+<div class="card">
+  <div class="flex items-center justify-between mb-4">
+    <div class="card-title" style="margin-bottom:0">Preuves récentes</div>
+    <a href="{{ url_for('hospital.proofs_list') }}" class="btn btn-sm btn-outline">Voir tout</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>UID</th><th>ID Patient</th><th>NOM Complet Patient</th><th>Prédicat</th>
+          <th>Taille (KB)</th><th>Temps Génér.(ms)</th><th>Date Génér.</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pr in proofs %}
+        <tr>
+          <td class="mono">{{ pr.proof_uid[:12] }}…</td>
+          <td>{{ pr.patient.id }}</td>
+          <td>{{ pr.patient.full_name() }}</td>
+          <td><span class="badge badge-success">{{ pr.predicate }}</span></td>
+          <td class="mono">{{ (pr.proof_size_bytes/1024)|round(3) }} </td>
+          <td class="mono">{{ pr.generation_time_ms|round(3) }} </td>
+          <td class="text-muted text-xs">{{ pr.generated_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>
+            <a href="{{ url_for('hospital.proof_detail', proof_uid=pr.proof_uid) }}"
+               class="btn btn-sm btn-outline">Voir</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

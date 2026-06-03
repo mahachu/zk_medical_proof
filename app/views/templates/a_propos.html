@@ -1,0 +1,664 @@
+{% extends "base.html" %}
+{% block title %}À propos — ZK Medical{% endblock %}
+
+{% block body %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0f1a14; --ink2: #2a3d30; --ink3: #6b7c72; --ink4: #9aaa9f;
+    --surface: #ffffff; --bg: #f4f3ef;
+    --accent: #2d6a4f; --accent2: #40916c; --accent3: #74c69d;
+    --accent-light: #d8f3dc;
+    --border: #dcd9d1; --border2: #e8e5de;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+    --r: 8px; --r-lg: 14px;
+  }
+
+  html, body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--ink);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+
+  .nav-brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; outline: none; }
+  .nav-brand:hover { text-decoration: none; }
+  .nav-brand * { text-decoration: none; }
+
+  .nav-brand-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(45,106,79,0.25); border: 1.5px solid rgba(116,198,157,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 0.8rem; color: var(--accent3);
+  }
+  .nav-brand-name { font-family: var(--serif); font-size: 1rem; font-weight: 700; color: #fff; }
+  .nav-brand-name span { color: var(--accent3); }
+  .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+  .nav-links a { padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.8rem; color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.15s, background 0.15s; }
+  .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+  .nav-links a.active { color: var(--accent3); background: rgba(45,106,79,0.2); }
+  .nav-cta { padding: 0.45rem 1rem; background: var(--accent); color: #fff !important; border-radius: 6px; font-size: 0.78rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+  .nav-cta:hover { background: var(--accent2) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink); padding: 6rem 2rem 5rem;
+    text-align: center; position: relative; overflow: hidden;
+  }
+
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 20% 40%, rgba(45,106,79,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 70% at 80% 60%, rgba(64,145,108,0.15) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 680px; margin: 0 auto; }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.3rem 0.9rem; border-radius: 20px;
+    background: rgba(45,106,79,0.25); border: 1px solid rgba(116,198,157,0.3);
+    font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent3); margin-bottom: 1.5rem;
+  }
+
+  .hero-eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--accent3); }
+
+  .hero h1 {
+    font-family: var(--serif); font-size: clamp(2.2rem, 4.5vw, 3rem);
+    font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 1.25rem;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--accent3); }
+
+  .hero p {
+    font-size: 0.95rem; color: rgba(255,255,255,0.5);
+    line-height: 1.8; max-width: 520px; margin: 0 auto;
+  }
+
+  /* ── SECTIONS ── */
+  .section { padding: 5rem 2rem; max-width: 1000px; margin: 0 auto; }
+  .section-alt { background: var(--surface); }
+  .section-alt .section { background: var(--surface); }
+
+  .section-label {
+    font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  .section-label::before { content: ''; width: 20px; height: 1.5px; background: var(--accent); }
+
+  .section-title {
+    font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700; color: var(--ink); line-height: 1.25; margin-bottom: 1.25rem;
+  }
+
+  .section-title em { font-style: italic; color: var(--accent); }
+
+  .section-text {
+    font-size: 0.9rem; color: var(--ink2); line-height: 1.85;
+    max-width: 620px; margin-bottom: 1rem;
+  }
+
+  /* ── CONTEXT GRID ── */
+  .context-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem; margin-top: 2.5rem;
+  }
+
+  .context-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 1.75rem;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .context-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.07); border-color: var(--accent3); }
+
+  .context-card-icon {
+    font-size: 1.75rem; margin-bottom: 1rem; display: block;
+  }
+
+  .context-card-title {
+    font-family: var(--serif); font-size: 1rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 0.6rem;
+  }
+
+  .context-card-text { font-size: 0.82rem; color: var(--ink3); line-height: 1.7; }
+
+  /* ── ZK SCHEMA ── */
+    .zk-schema {
+    background: var(--ink); border-radius: var(--r-lg);
+    padding: 2rem 2.5rem; margin: 2rem 0;
+    display: grid; grid-template-columns: 1fr 180px 1fr;
+    gap: 1.5rem; align-items: center;
+    }
+
+    .schema-actor {
+    text-align: center; padding: 1.25rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(116,198,157,0.15); border-radius: var(--r);
+    }
+
+    .schema-actor-icon { font-size: 1.6rem; margin-bottom: 0.5rem; display: block; }
+    .schema-actor-name {
+    font-family: var(--serif); font-size: 0.9rem; font-weight: 600;
+    color: #fff; margin-bottom: 0.2rem;
+    }
+    .schema-actor-role {
+    font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent3);
+    }
+
+    .schema-arrows {
+    display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+    }
+
+    .schema-arrow-row {
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    width: 100%;
+    }
+
+    .schema-arrow-label {
+    font-family: var(--mono); font-size: 0.6rem;
+    color: rgba(116,198,157,0.7); text-align: center;
+    }
+
+    .schema-arrow-label-sub {
+    font-family: var(--mono); font-size: 0.52rem;
+    color: rgba(116,198,157,0.4); text-align: center;
+    }
+
+    .schema-proof-label {
+    display: inline-block; padding: 0.2rem 0.6rem;
+    background: rgba(45,106,79,0.3); border: 1px solid rgba(116,198,157,0.25);
+    border-radius: 4px; font-family: var(--mono); font-size: 0.62rem;
+    color: var(--accent3); margin-top: 0.3rem;
+    }
+
+  /* ── OBJECTIVES ── */
+  .objectives-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin-top: 2rem;
+  }
+
+  .obj-card {
+    padding: 1.5rem 1.25rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r-lg); position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .obj-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+
+  .obj-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent);
+  }
+
+  .obj-num {
+    font-family: var(--mono); font-size: 0.62rem; color: var(--accent);
+    letter-spacing: 0.15em; margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .obj-title {
+    font-family: var(--serif); font-size: 0.95rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 0.5rem;
+  }
+
+  .obj-text { font-size: 0.78rem; color: var(--ink3); line-height: 1.65; }
+
+  /* ── TECH STACK ── */
+  .tech-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem; margin-top: 2rem;
+  }
+
+  .tech-item {
+    display: flex; align-items: center; gap: 0.85rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: var(--r); transition: border-color 0.15s;
+  }
+
+  .tech-item:hover { border-color: var(--accent3); }
+
+  .tech-badge {
+    width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+    background: var(--ink); display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.58rem; color: var(--accent3);
+    text-align: center; line-height: 1.3;
+  }
+
+  .tech-name { font-size: 0.8rem; font-weight: 500; color: var(--ink); }
+  .tech-desc { font-size: 0.68rem; color: var(--ink3); margin-top: 1px; }
+
+  /* ── CTA ── */
+  .cta-section {
+    background: var(--ink); padding: 5rem 2rem;
+    text-align: center; position: relative; overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(45,106,79,0.25) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .cta-content { position: relative; z-index: 2; max-width: 500px; margin: 0 auto; }
+
+  .cta-title {
+    font-family: var(--serif); font-size: 1.8rem; font-weight: 700;
+    color: #fff; margin-bottom: 1rem; line-height: 1.3;
+  }
+
+  .cta-title em { font-style: italic; color: var(--accent3); }
+
+  .cta-sub { font-size: 0.88rem; color: rgba(255,255,255,0.45); margin-bottom: 2rem; line-height: 1.7; }
+
+  .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  .btn-primary {
+    padding: 0.85rem 2rem; background: var(--accent); color: #fff;
+    border: none; border-radius: var(--r); font-family: var(--sans);
+    font-size: 0.88rem; font-weight: 500; cursor: pointer;
+    text-decoration: none; transition: background 0.2s, transform 0.15s;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  .btn-secondary {
+    padding: 0.85rem 2rem;
+    background: transparent; color: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(255,255,255,0.2); border-radius: var(--r);
+    font-family: var(--sans); font-size: 0.88rem; font-weight: 500;
+    text-decoration: none; transition: border-color 0.2s, color 0.2s;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    background: var(--ink); border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 1.25rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+  }
+
+  .footer-copy { font-size: 0.68rem; color: rgba(255,255,255,0.35); }
+  .footer-links { display: flex; align-items: center; gap: 1.5rem; }
+  .footer-links a { font-size: 0.68rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.15s; }
+  .footer-links a:hover { color: var(--accent3); }
+  .footer-badge { font-family: var(--mono); font-size: 0.6rem; color: var(--accent3); background: rgba(45,106,79,0.15); border: 1px solid rgba(45,106,79,0.3); padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.05em; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .context-grid { grid-template-columns: 1fr; }
+    .objectives-grid { grid-template-columns: 1fr; }
+    .zk-schema { grid-template-columns: 1fr; gap: 1rem; }
+    .schema-arrow { transform: rotate(90deg); }
+    .top-nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .doc-footer { flex-direction: column; text-align: center; gap: 0.75rem; }
+    .section { padding: 3rem 1.25rem; }
+    .hero { padding: 4rem 1.25rem 3rem; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 1.8rem; }
+    .tech-grid { grid-template-columns: 1fr 1fr; }
+    .cta-btns { flex-direction: column; align-items: center; }
+  }
+
+    /* Flèches verticales mobile */
+    .schema-arrows-vertical { display: none; }
+
+    @media (max-width: 768px) {
+    .schema-arrows { display: none; }
+    .schema-arrows-vertical {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.5rem 0;
+    }
+    }
+
+    .schema-arrow-col {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    }
+
+    .schema-arrow-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    }
+
+    .schema-arrow-label-v {
+    font-size: 0.62rem;
+    color: rgba(116,198,157,0.8);
+    font-family: var(--mono);
+    }
+
+    .schema-arrow-label-sub-v {
+    font-size: 0.55rem;
+    color: rgba(116,198,157,0.5);
+    font-family: var(--mono);
+    }
+</style>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <a href="{{ url_for('auth.login') }}" class="nav-brand">
+    <div class="nav-brand-icon">ZK</div>
+    <div class="nav-brand-name">ZK <span>Medical</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="{{ url_for('auth.login') }}">Connexion</a>
+    <a href="{{ url_for('auth.register') }}">Inscription</a>
+    <a href="/documentation">Documentation</a>
+    <a href="#" class="active">À propos</a>
+    <a href="/contact">Contact</a>
+  </div>
+  <a href="{{ url_for('auth.login') }}" class="nav-cta">Accéder →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Projet académique — UE Sécurité M1</div>
+    <h1>Confidentialité médicale par<br><em>preuves à connaissance nulle</em></h1>
+    <p>Un prototype de système ZK appliqué aux données médicales, conçu dans le cadre d'un projet universitaire de Master 1 Informatique, spécialité Sécurité.</p>
+  </div>
+</div>
+
+<!-- CONTEXTE -->
+<div style="background: var(--surface);">
+  <div class="section">
+    <div class="section-label">Contexte du projet</div>
+    <h2 class="section-title">Pourquoi les <em>preuves ZK</em> pour la santé ?</h2>
+    <p class="section-text">Les données médicales sont parmi les plus sensibles qui soient. Lorsqu'un hôpital doit certifier une propriété d'un dossier patient auprès d'un tiers — un assureur, une autorité sanitaire — le partage de la donnée brute représente un risque majeur de confidentialité.</p>
+    <p class="section-text">Les preuves à connaissance nulle (ZKP) permettent de résoudre ce paradoxe : certifier qu'une propriété est vraie sans révéler la donnée qui la sous-tend.</p>
+
+    <div class="context-grid">
+      <div class="context-card">
+        <span class="context-card-icon">🔒</span>
+        <div class="context-card-title">Problème de confidentialité</div>
+        <div class="context-card-text">Un hôpital doit prouver qu'un patient n'a pas de fièvre (T &lt; 38°C) pour une assurance voyage, sans révéler la température exacte ni aucune autre donnée de santé.</div>
+      </div>
+      <div class="context-card">
+        <span class="context-card-icon">✓</span>
+        <div class="context-card-title">Solution ZK</div>
+        <div class="context-card-text">Une preuve cryptographique est générée et transmise. L'assureur vérifie mathématiquement le prédicat sans jamais avoir accès à la valeur réelle de T.</div>
+      </div>
+      <div class="context-card">
+        <span class="context-card-icon">🛡️</span>
+        <div class="context-card-title">Garanties formelles</div>
+        <div class="context-card-text">Soundness computationnelle, Zero-Knowledge parfait, non-interactivité — des propriétés prouvables reposant sur la difficulté du logarithme discret.</div>
+      </div>
+      <div class="context-card">
+        <span class="context-card-icon">📊</span>
+        <div class="context-card-title">Limites pratiques mesurées</div>
+        <div class="context-card-text">Taille de la preuve, temps de génération et vérification — mesurés et analysés pour évaluer la viabilité pratique d'une telle approche.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SCHEMA ZK -->
+<div class="section">
+  <div class="section-label">Architecture</div>
+  <h2 class="section-title">Schéma de la preuve</h2>
+  <p class="section-text">Le flux simplifié d'une preuve ZK médicale, du prouveur au vérifieur :</p>
+
+  <div class="zk-schema">
+
+    <!-- Hôpital -->
+    <div class="schema-actor">
+      <span class="schema-actor-icon">🏥</span>
+      <div class="schema-actor-name">Hôpital</div>
+      <div class="schema-actor-role">Prouveur ZK</div>
+      <div style="margin-top:0.75rem;">
+        <div class="schema-proof-label">T = 37.25°C (secret)</div>
+        <div class="schema-proof-label" style="margin-top:0.3rem">génère π(T &lt; 38°C)</div>
+      </div>
+    </div>
+
+    <!-- Flèches horizontales (desktop) -->
+    <div class="schema-arrows">
+
+      <!-- Flèche aller → -->
+      <div class="schema-arrow-row">
+        <div class="schema-arrow-label">preuve π</div>
+        <svg width="100%" height="18" viewBox="0 0 160 18" preserveAspectRatio="none">
+          <defs>
+            <marker id="arr-right" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="rgba(116,198,157,0.8)"/>
+            </marker>
+          </defs>
+          <line x1="2" y1="9" x2="152" y2="9"
+                stroke="rgba(116,198,157,0.5)" stroke-width="1.5"
+                marker-end="url(#arr-right)"/>
+        </svg>
+        <div class="schema-arrow-label-sub">sans T (zero-knowledge)</div>
+      </div>
+
+      <!-- Flèche retour ← -->
+      <div class="schema-arrow-row">
+        <div class="schema-arrow-label">résultat vérification</div>
+        <svg width="100%" height="18" viewBox="0 0 160 18" preserveAspectRatio="none">
+          <defs>
+            <marker id="arr-left" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto">
+              <path d="M8,0 L8,6 L0,3 z" fill="rgba(116,198,157,0.5)"/>
+            </marker>
+          </defs>
+          <line x1="12" y1="9" x2="158" y2="9"
+                stroke="rgba(116,198,157,0.3)" stroke-width="1.5"
+                stroke-dasharray="4,3"
+                marker-start="url(#arr-left)"/>
+        </svg>
+        <div class="schema-arrow-label-sub">T &lt; 38°C ✓ / ✗</div>
+      </div>
+
+    </div>
+
+    <!-- Flèches verticales (mobile) -->
+    <div class="schema-arrows-vertical">
+
+      <!-- Flèche bas ↓ -->
+      <div class="schema-arrow-col">
+        <svg width="18" height="80" viewBox="0 0 18 80">
+          <line x1="9" y1="2" x2="9" y2="65"
+                stroke="rgba(116,198,157,0.5)" stroke-width="1.5"/>
+          <polygon points="4,65 14,65 9,75"
+                   fill="rgba(116,198,157,0.8)"/>
+        </svg>
+        <div class="schema-arrow-texts">
+          <div class="schema-arrow-label-v">preuve π</div>
+          <div class="schema-arrow-label-sub-v">sans T</div>
+          <div class="schema-arrow-label-sub-v">(zero-knowledge)</div>
+        </div>
+      </div>
+
+      <!-- Flèche haut ↑ -->
+      <div class="schema-arrow-col">
+        <svg width="18" height="80" viewBox="0 0 18 80">
+          <line x1="9" y1="15" x2="9" y2="78"
+                stroke="rgba(116,198,157,0.3)" stroke-width="1.5"
+                stroke-dasharray="4,3"/>
+          <polygon points="4,15 14,15 9,5"
+                   fill="rgba(116,198,157,0.5)"/>
+        </svg>
+        <div class="schema-arrow-texts">
+          <div class="schema-arrow-label-v">résultat</div>
+          <div class="schema-arrow-label-sub-v">T &lt; 38°C ✓ / ✗</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Assureur -->
+    <div class="schema-actor">
+      <span class="schema-actor-icon">🛡️</span>
+      <div class="schema-actor-name">Assureur</div>
+      <div class="schema-actor-role">Vérifieur ZK</div>
+      <div style="margin-top:0.75rem;">
+        <div class="schema-proof-label">vérifie π</div>
+        <div class="schema-proof-label" style="margin-top:0.3rem">T &lt; 38°C ✓</div>
+      </div>
+    </div>
+
+  </div><!-- fin .zk-schema -->
+
+</div><!-- fin .section -->
+
+
+<!-- OBJECTIFS -->
+<div style="background: var(--surface);">
+  <div class="section">
+    <div class="section-label">Objectifs académiques</div>
+    <h2 class="section-title">Tâches réalisées</h2>
+
+    <div class="objectives-grid">
+      <div class="obj-card">
+        <div class="obj-num">Tâche 01</div>
+        <div class="obj-title">Modélisation du scénario</div>
+        <div class="obj-text">Conception du modèle de confidentialité impliquant trois entités : patient, hôpital (prouveur) et assureur (vérifieur), avec leurs rôles et relations formalisés.</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">Tâche 02</div>
+        <div class="obj-title">Choix et implémentation du prédicat</div>
+        <div class="obj-text">Sélection du prédicat T &lt; 38°C sur un attribut numérique à précision décimale arbitraire, avec mise à l'échelle et décomposition binaire.</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">Tâche 03</div>
+        <div class="obj-title">Schéma ZK inspiré Bulletproofs</div>
+        <div class="obj-text">Implémentation d'un Range Proof binaire avec Pedersen Commitments, preuves OR (Cramer-Damgård-Schoenmakers) et protocole Sigma non-interactif (Fiat-Shamir).</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">Tâche 04</div>
+        <div class="obj-title">Prouveur et vérifieur</div>
+        <div class="obj-text">Deux interfaces distinctes : l'hôpital génère et envoie la preuve, l'assureur vérifie les trois contrôles cryptographiques sans interagir avec le prouveur.</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">Tâche 05</div>
+        <div class="obj-title">Mesure des ressources</div>
+        <div class="obj-text">Collecte et analyse des métriques : temps de génération, temps de vérification, taille des preuves — pour évaluer la viabilité pratique du prototype.</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-num">Bonus</div>
+        <div class="obj-title">Système complet avec audit</div>
+        <div class="obj-text">Application web Flask avec gestion multi-rôle, journal d'audit complet, validation des inscriptions par administrateur et tableau de bord de métriques.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TECH STACK -->
+<div class="section">
+  <div class="section-label">Stack technique</div>
+  <h2 class="section-title">Technologies utilisées</h2>
+
+  <div class="tech-grid">
+    <div class="tech-item">
+      <div class="tech-badge">Py</div>
+      <div>
+        <div class="tech-name">Python 3.12</div>
+        <div class="tech-desc">Langage principal</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">FL</div>
+      <div>
+        <div class="tech-name">Flask</div>
+        <div class="tech-desc">Framework web</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">SA</div>
+      <div>
+        <div class="tech-name">SQLAlchemy</div>
+        <div class="tech-desc">ORM base de données</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">ZK</div>
+      <div>
+        <div class="tech-name">Pedersen + Sigma</div>
+        <div class="tech-desc">Cryptographie ZK</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">SHA</div>
+      <div>
+        <div class="tech-name">SHA-256</div>
+        <div class="tech-desc">Fiat-Shamir hash</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">RFC</div>
+      <div>
+        <div class="tech-name">RFC 3526 Group 14</div>
+        <div class="tech-desc">2048 bits MODP</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">DB</div>
+      <div>
+        <div class="tech-name">SQLite</div>
+        <div class="tech-desc">Base de données</div>
+      </div>
+    </div>
+    <div class="tech-item">
+      <div class="tech-badge">HTML</div>
+      <div>
+        <div class="tech-name">Jinja2 + CSS</div>
+        <div class="tech-desc">Templates UI</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-content">
+    <h2 class="cta-title">Explorer le système <em>ZK Medical</em></h2>
+    <p class="cta-sub">Connectez-vous pour tester le système complet : générez des preuves côté hôpital et vérifiez-les côté assureur.</p>
+    <div class="cta-btns">
+      <a href="{{ url_for('auth.login') }}" class="btn-primary">Se connecter →</a>
+      <a href="/documentation" class="btn-secondary">Lire la doc →</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="doc-footer">
+  <div class="footer-copy">© 2026 ZK Medical Proof — UE Projet — Informatique M1 Sécurité</div>
+  <div class="footer-links">
+    <a href="/documentation">Documentation</a>
+    <a href="#">À propos</a>
+    <a href="/contact">Contact</a>
+  </div>
+  <div class="footer-badge">RFC 3526 · 2048-bits</div>
+</footer>
+
+{% endblock %}

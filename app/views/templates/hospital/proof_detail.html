@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% from "macros.html" import hospital_sidebar with context %}
+{% block title %}Preuve {{ proof.proof_uid[:8] }} — Hôpital{% endblock %}
+{% block sidebar %}{{ hospital_sidebar(hospital, 'proofs') }}{% endblock %}
+
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="{{ url_for('hospital.dashboard') }}">Hôpital</a> /
+    <a href="{{ url_for('hospital.proofs_list') }}">Preuves</a> /
+    {{ proof.proof_uid[:12] }}…
+  </div>
+  <h1 class="page-title">Preuve ZK générée ✓</h1>
+  <p class="page-subtitle">Patient : {{patient.id}} — {{ patient.full_name() }} — {{ proof.generated_at.strftime('%d/%m/%Y à %H:%M') }}</p>
+</div>
+
+
+<!-- Résultat de vérification -->
+{% if verification %}
+  {% if verification.is_valid %}
+  <div class="alert alert-success">
+    ✓ <strong>Verdict de l'assureur ({{ verification.verified_at.strftime('%d/%m/%Y %H:%M') }}) :</strong>
+    Preuve VALIDE — le prédicat température &lt; 38°C est confirmé.
+  </div>
+  {% else %}
+  <div class="alert alert-danger">
+    ✗ <strong>Verdict de l'assureur ({{ verification.verified_at.strftime('%d/%m/%Y %H:%M') }}) :</strong>
+    Preuve INVALIDE.
+    {% if verification.error_message %}<br><small>{{ verification.error_message }}</small>{% endif %}
+  </div>
+  {% endif %}
+{% else %}
+<div class="alert alert-info">
+  ⏳ En attente de vérification par
+  <strong>{{ proof.target_insurer.nom if proof.target_insurer else 'l\'assureur' }}</strong>.
+</div>
+{% endif %}
+
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+  <div class="stat-card">
+    <div class="stat-label">Taille de la preuve</div>
+    <div class="stat-value">{{ (proof.proof_size_bytes / 1024)|round(3) }}</div>
+    <div class="stat-sub">KB</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Temps de génération</div>
+    <div class="stat-value">{{ proof.generation_time_ms|round(3) }}</div>
+    <div class="stat-sub">ms</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Prédicat</div>
+    <div class="stat-value" style="font-size:1.5rem;margin-top:0.3rem;">T &lt; 38°C</div>
+    <div class="stat-sub">satisfait</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Destinataire</div>
+    <div class="stat-value" style="font-size:1.5rem;margin-top:0.3rem;">
+      {{ proof.target_insurer.nom[:12] if proof.target_insurer else '—' }}
+    </div>
+    <div class="stat-sub">assureur</div>
+  </div>
+</div>
+
+
+<div class="card" style="width:66%;" >
+  <div class="card-title">Détails de la preuve</div>
+  <table style="font-size:0.78rem;">
+    <tbody>
+      <tr><td style="padding:0.5rem 0;color:var(--ink3);width:40%;">UID</td>
+          <td class="mono" style="font-size:0.62rem;">{{ proof.proof_uid }}</td></tr>
+      <tr><td style="padding:0.5rem 0;color:var(--ink3);">Patient</td>
+          <td>{{ patient.full_name() }}</td></tr>
+      <tr><td style="padding:0.5rem 0;color:var(--ink3);">Prédicat</td>
+          <td><code style="background:var(--accent-light);color:var(--accent);padding:0.1rem 0.4rem;border-radius:2px;">{{ proof.predicate }}</code></td></tr>
+      <tr><td style="padding:0.5rem 0;color:var(--ink3);">Assureur destinataire</td>
+          <td>{{ proof.target_insurer.nom if proof.target_insurer else '—' }}</td></tr>
+      <tr><td style="padding:0.5rem 0;color:var(--ink3);">Généré le</td>
+          <td>{{ proof.generated_at.strftime('%d/%m/%Y à %H:%M:%S') }}</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:1.5rem;">
+    <a href="{{ url_for('hospital.proof_download', proof_uid=proof.proof_uid) }}"
+        class="btn btn-accent">↓ Télécharger la preuve (.json)</a>
+  </div>
+</div>
+
+
+<div style="margin-top:1rem;">
+  <a href="{{ url_for('hospital.proofs_list') }}" class="btn btn-outline">← Retour aux preuves</a>
+</div>
+{% endblock %}

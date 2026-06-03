@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% from "macros.html" import hospital_sidebar with context %}
+{% block title %}Générer une preuve ZK — Hôpital{% endblock %}
+{% block sidebar %}{{ hospital_sidebar(hospital, 'generate') }}{% endblock %}
+
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('hospital.dashboard') }}">Hôpital</a> / Générer une preuve</div>
+  <h1 class="page-title">Générer une preuve ZK</h1>
+  <p class="page-subtitle">Prouve que la température est &lt; 38°C sans révéler la valeur exacte</p>
+</div>
+
+<div class="grid-2">
+  <div>
+    <div class="card">
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" id="proofForm">
+        <div class="form-group">
+          <label for="patient_id">Patient</label>
+          <select id="patient_id" name="patient_id" required>
+            <option value="">— Sélectionner un patient —</option>
+            {% for p in patients %}
+            <option value="{{ p.id }}"
+              data-temp="{{ p.temperature or '' }}"
+              {% if request.args.get('patient_id') == p.id|string or request.form.get('patient_id') == p.id|string %}selected{% endif %}>
+              {{ p.full_name() }} ({{ p.age }} ans){% if p.temperature %} — {{ p.temperature }}°C{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+          {% if not patients %}
+          <div class="form-hint"><a href="{{ url_for('hospital.patient_new') }}">Créer un patient d'abord</a></div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="insurer_id">Assureur destinataire</label>
+          <select id="insurer_id" name="insurer_id" required>
+            <option value="">— Choisir l'assureur —</option>
+            {% for ins in insurers %}
+            <option value="{{ ins.id }}"
+              {% if request.form.get('insurer_id') == ins.id|string %}selected{% endif %}>
+              {{ ins.nom }} — {{ ins.ville }}
+            </option>
+            {% endfor %}
+          </select>
+          {% if not insurers %}
+          <div class="form-hint">Aucun assureur enregistré dans le système.</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Température associée au patient (°C)</label>
+          <div id="temp-display" style="padding:0.6rem 0.85rem;background:var(--surface2);
+              border:1.5px solid var(--border);border-radius:var(--radius);
+              font-family:var(--mono);font-size:0.82rem;color:var(--ink3);">
+            — Température du patient sélectionné —
+          </div>
+          <input type="hidden" id="temperature" name="temperature"
+                value="{{ request.form.get('temperature', '') }}">
+          <div class="form-hint">
+            Température prélevée dans la base de données pour ce patient.
+            La valeur réelle <strong>ne sera pas incluse</strong> dans la preuve transmise.
+          </div>
+        </div>
+
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+                    padding:1rem;margin-bottom:1.25rem;font-size:0.75rem;">
+          <strong>Processus :</strong>
+          <div style="margin-top:0.5rem;color:var(--ink3);line-height:1.7;">
+            1. L’hôpital mesure la température du patient.<br>
+            2. Il calcule l’engagement de Pedersen.<br>
+            3. Il génère la preuve ZK.<br>
+            4. Il envoie la preuve à l’assureur pour vérification.
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-accent" id="submitBtn"
+                {% if not patients or not insurers %}disabled{% endif %}>
+          ⬡ Générer et envoyer la preuve
+        </button>
+      </form>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script>
+  const select = document.getElementById('patient_id');
+  const tempInput = document.getElementById('temperature');
+  const tempDisplay = document.getElementById('temp-display');
+
+  select.addEventListener('change', () => {
+    const t = select.options[select.selectedIndex].dataset.temp;
+    if (t) {
+      tempInput.value = t;
+      tempDisplay.textContent = t + ' °C';
+      tempDisplay.style.color = 'var(--ink)';
+    } else {
+      tempInput.value = '';
+      tempDisplay.textContent = '— Sélectionnez un patient —';
+      tempDisplay.style.color = 'var(--ink3)';
+    }
+  });
+  if (select.value) select.dispatchEvent(new Event('change'));
+
+  document.getElementById('proofForm').addEventListener('submit', () => {
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = '⏳ Génération en cours…';
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "macros.html" import hospital_sidebar with context %}
+{% block title %}Mes preuves — Hôpital{% endblock %}
+{% block sidebar %}{{ hospital_sidebar(hospital, 'proofs') }}{% endblock %}
+
+
+{% block content %}
+<div class="page-header flex items-center justify-between">
+  <div>
+    <div class="breadcrumb"><a href="{{ url_for('hospital.dashboard') }}">Hôpital</a> / Preuves</div>
+    <h1 class="page-title">Mes preuves ZK</h1>
+    <p class="page-subtitle">{{ proofs|length }} preuve(s) générée(s)</p>
+  </div>
+  <a href="{{ url_for('hospital.generate_proof') }}" class="btn btn-accent">⬡ Nouvelle preuve</a>
+</div>
+
+{% if proofs %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>UID</th>
+          <th>ID Patient</th>
+          <th>Nom Complet Patient</th>
+          <th>Assureur destinataire</th>
+          <th>Prédicat</th>
+          <th>Taille (KB)</th>
+          <th>Temps Génér. (ms)</th>
+          <th>Résultat vérif.</th>
+          <th>Date Génér.</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in proofs %}
+        {% set ver = p.verifications.first() %}
+        <tr>
+          <td class="mono">{{ p.proof_uid[:12] }}…</td>
+          <td>{{ p.patient.id if p.patient else '—' }}</td>
+          <td>{{ p.patient.full_name() if p.patient else '—' }}</td>
+          <td>{{ p.target_insurer.nom if p.target_insurer else '—' }}</td>
+          <td><span class="badge badge-success">{{ p.predicate }}</span></td>
+          <td class="mono">{{ (p.proof_size_bytes / 1024)|round(3) }}</td>
+          <td class="mono">{{ p.generation_time_ms|round(3) }}</td>
+          <td>
+            {% if ver %}
+              {% if ver.is_valid %}
+                <span class="badge badge-success">Valide</span>
+              {% else %}
+                <span class="badge badge-danger">Invalide</span>
+              {% endif %}
+            {% else %}
+              <span class="badge badge-neutral">En attente</span>
+            {% endif %}
+          </td>
+          <td class="text-sm text-muted">{{ p.generated_at.strftime('%d/%m/%y %H:%M') }}</td>
+          <td>
+            <div class="flex gap-2">
+              <a href="{{ url_for('hospital.proof_detail', proof_uid=p.proof_uid) }}"
+                 class="btn btn-sm btn-outline">Voir</a>
+              <a href="{{ url_for('hospital.proof_download', proof_uid=p.proof_uid) }}"
+                 class="btn btn-sm">↓</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;">
+  <div style="font-size:2rem;margin-bottom:1rem;">◫</div>
+  <p class="text-muted" style="margin-bottom:1.5rem;">Aucune preuve générée pour le moment.</p>
+  <a href="{{ url_for('hospital.generate_proof') }}" class="btn btn-accent">⬡ Générer la première preuve</a>
+</div>
+{% endif %}
+{% endblock %}

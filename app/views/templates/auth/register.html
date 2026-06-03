@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+{% block title %}Inscription — ZK Medical{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0f1a14; --ink2: #2a3d30; --ink3: #6b7c72; --ink4: #9aaa9f;
+    --surface: #ffffff; --bg: #f4f3ef;
+    --accent: #2d6a4f; --accent2: #40916c; --accent3: #74c69d;
+    --accent-light: #d8f3dc;
+    --danger: #c1121f; --danger-lt: #fde8e8;
+    --border: #dcd9d1; --border2: #e8e5de;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+    --r: 8px; --r-lg: 14px;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    margin-left: 0 !important;
+    max-width: 100% !important;
+    min-height: unset !important;
+    display: block !important;
+  }
+  .flash-container { display: none; }
+
+  html, body { height: 100%; font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  .reg-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+  }
+
+  /* LEFT */
+  .panel-left {
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem 3rem;
+    grid-row: 1;
+    min-height: calc(100vh - 56px);
+  }
+
+  .panel-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 30%, rgba(45,106,79,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 70% at 90% 70%, rgba(64,145,108,0.2) 0%, transparent 55%);
+    animation: meshMove 14s ease-in-out infinite alternate;
+  }
+
+  @keyframes meshMove { 0%{transform:scale(1) rotate(0deg)} 100%{transform:scale(1.06) rotate(1.5deg)} }
+
+  .panel-left::after {
+    content:'';position:absolute;top:0;right:0;width:1px;height:100%;
+    background:linear-gradient(to bottom, transparent, rgba(116,198,157,0.4) 40%, rgba(64,145,108,0.5) 70%, transparent);
+  }
+
+  .noise {
+    position:absolute;inset:0;opacity:0.03;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:180px;pointer-events:none;
+  }
+
+  .lc { position:relative;z-index:2;display:flex;flex-direction:column;height:100%; }
+
+  .brand { display:flex;align-items:center;gap:0.75rem;margin-bottom:auto; }
+  .brand-icon {
+    width:40px;height:40px;border-radius:10px;
+    background:rgba(45,106,79,0.2);border:1.5px solid rgba(116,198,157,0.3);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--serif);font-size:0.9rem;color:var(--accent3);
+  }
+  .brand-name { font-family:var(--serif);font-size:1.05rem;font-weight:700;color:#fff; }
+  .brand-name span { color:var(--accent3); }
+  .brand-sub { font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:1px; }
+
+  .hero { margin:3rem 0 2.5rem; }
+
+  .hero-eyebrow {
+    display:inline-flex;align-items:center;gap:0.5rem;
+    font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent3);
+    margin-bottom:1rem;opacity:0;animation:fadeUp 0.6s ease 0.3s forwards;
+  }
+  .hero-eyebrow::before { content:'';width:20px;height:1px;background:var(--accent3); }
+
+  .hero-title {
+    font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;
+    color:#fff;line-height:1.2;opacity:0;animation:fadeUp 0.6s ease 0.45s forwards;
+  }
+  .hero-title em { font-style:italic;color:var(--accent3); }
+
+  .hero-subtitle {
+    margin-top:1rem;font-size:0.85rem;color:rgba(255,255,255,0.45);
+    line-height:1.75;max-width:340px;opacity:0;animation:fadeUp 0.6s ease 0.6s forwards;
+  }
+
+  .process {
+    display:flex;flex-direction:column;gap:0.85rem;
+    opacity:0;animation:fadeUp 0.6s ease 0.75s forwards;
+  }
+
+  .process-item {
+    display:flex;align-items:flex-start;gap:0.85rem;
+  }
+
+  .step-num {
+    width:28px;height:28px;border-radius:50%;
+    border:1.5px solid rgba(116,198,157,0.35);
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.68rem;font-weight:600;color:var(--accent3);
+    flex-shrink:0;margin-top:1px;
+  }
+
+  .step-txt { font-size:0.78rem;color:rgba(255,255,255,0.55);line-height:1.5;padding-top:3px; }
+  .step-txt strong { color:rgba(255,255,255,0.8); }
+
+  .crypto-bar {
+    margin-top:2.5rem;padding:0.85rem 1.1rem;
+    background:rgba(255,255,255,0.03);border:1px solid rgba(116,198,157,0.12);
+    border-radius:6px;font-family:var(--mono);font-size:0.62rem;
+    color:rgba(116,198,157,0.65);line-height:1.9;
+    opacity:0;animation:fadeUp 0.6s ease 0.9s forwards;
+  }
+  .crypto-bar span { color:rgba(116,198,157,0.4); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+  /* RIGHT */
+  .panel-right {
+    background: var(--bg);
+    display:flex;flex-direction:column;
+    padding:2.5rem 3rem;
+    overflow-y:auto;
+    min-height: calc(100vh - 56px);
+  }
+
+  .form-wrapper {
+    width:100%;max-width:480px;margin:auto;
+    opacity:0;animation:fadeUp 0.6s ease 0.3s forwards;
+  }
+
+  .form-top { margin-bottom:1.75rem; }
+  .form-eyebrow { font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem; }
+  .form-title { font-family:var(--serif);font-size:1.7rem;font-weight:700;color:var(--ink);line-height:1.2; }
+  .form-sub { font-size:0.82rem;color:var(--ink3);margin-top:0.4rem;line-height:1.6; }
+
+  /* Role cards */
+  .role-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.75rem; }
+
+  .role-card {
+    position:relative;padding:1rem;
+    border:1.5px solid var(--border);border-radius:var(--r-lg);
+    background:var(--surface);cursor:pointer;text-align:center;
+    transition:all 0.2s;
+  }
+  .role-card:hover { border-color:var(--accent3);background:rgba(45,106,79,0.03); }
+  .role-card.active {
+    border-color:var(--accent);background:rgba(45,106,79,0.05);
+    box-shadow:0 0 0 3px rgba(45,106,79,0.1);
+  }
+  .role-card-check {
+    position:absolute;top:8px;right:8px;
+    width:18px;height:18px;border-radius:50%;background:var(--accent);
+    display:none;align-items:center;justify-content:center;
+  }
+  .role-card.active .role-card-check { display:flex; }
+  .role-card-check svg { width:10px;height:10px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round; }
+  .role-icon { font-size:1.4rem;margin-bottom:0.35rem; }
+  .role-lbl { font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3); }
+  .role-card.active .role-lbl { color:var(--accent); }
+
+  /* Field */
+  .field { display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.1rem; }
+  .field label { font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink2); }
+  .field-wrap { position:relative; }
+  .field-icon { position:absolute;left:0.85rem;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink3); }
+  .field-icon svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round; }
+  .field input {
+    width:100%;padding:0.72rem 0.9rem 0.72rem 2.6rem;
+    background:var(--surface);color:var(--ink);
+    border:1.5px solid var(--border);border-radius:var(--r);
+    font-family:var(--sans);font-size:0.88rem;outline:none;
+    transition:border-color 0.2s,box-shadow 0.2s;
+  }
+  .field input:focus { border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,106,79,0.1); }
+  .field input::placeholder { color:var(--ink4); }
+  .field-toggle {
+    position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;color:var(--ink3);padding:0.2rem;
+    display:flex;align-items:center;transition:color 0.15s;
+  }
+  .field-toggle:hover { color:var(--ink); }
+  .field-toggle svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round; }
+
+  .form-row2 { display:grid;grid-template-columns:1fr 1fr;gap:0.85rem; }
+
+  .divider {
+    display:flex;align-items:center;gap:0.75rem;
+    margin:1.25rem 0;font-size:0.62rem;font-weight:600;
+    letter-spacing:0.12em;text-transform:uppercase;color:var(--ink3);
+  }
+  .divider::before,.divider::after { content:'';flex:1;height:1px;background:var(--border); }
+
+  .alert {
+    display:flex;align-items:flex-start;gap:0.7rem;padding:0.85rem 1rem;
+    border-radius:var(--r);font-size:0.8rem;margin-bottom:1.25rem;line-height:1.5;
+  }
+  .alert svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px; }
+  .alert-danger { background:var(--danger-lt);border:1px solid rgba(193,18,31,0.2);color:var(--danger); }
+
+  .btn-submit {
+    width:100%;padding:0.88rem 1.5rem;background:var(--accent);color:#fff;
+    border:none;border-radius:var(--r);font-family:var(--sans);
+    font-size:0.9rem;font-weight:500;letter-spacing:0.03em;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:0.5rem;
+    transition:background 0.2s,transform 0.15s,box-shadow 0.2s;
+    position:relative;overflow:hidden;margin-top:0.75rem;
+  }
+  .btn-submit::before { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.08) 0%,transparent 50%);pointer-events:none; }
+  .btn-submit:hover { background:var(--accent2);box-shadow:0 6px 20px rgba(45,106,79,0.35);transform:translateY(-1px); }
+  .btn-submit svg { width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s; }
+  .btn-submit:hover svg { transform:translateX(3px); }
+
+  .login-link { text-align:center;margin-top:1.25rem;font-size:0.8rem;color:var(--ink3); }
+  .login-link a { color:var(--accent);font-weight:500;border-bottom:1px solid rgba(45,106,79,0.3);padding-bottom:1px;transition:border-color 0.2s; }
+  .login-link a:hover { border-color:var(--accent);text-decoration:none; }
+
+  @media(max-width:900px) {
+    .reg-page { grid-template-columns:1fr; }
+    .panel-left {min-height: auto; padding:2rem;min-height:auto; }
+    .hero { margin:1.5rem 0 1.25rem; }
+    .hero-title { font-size:1.7rem; }
+    .process,.crypto-bar { display:none; }
+    .panel-right {min-height: auto; padding:2rem 1.5rem; }
+
+  }
+
+  @media(max-width:480px) {
+    .panel-right { padding:1.5rem 1.25rem; }
+    .role-grid { gap:0.5rem; }
+    .form-row2 { grid-template-columns:1fr; }
+  }
+
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<div class="reg-page">
+
+  <!-- LEFT -->
+  <aside class="panel-left">
+    <div class="noise"></div>
+    <div class="lc">
+      <div class="brand">
+        <div class="brand-icon">ZK</div>
+        <div>
+          <div class="brand-name">ZK <span>Medical</span></div>
+          <div class="brand-sub">Preuves ZK médicales</div>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="hero-eyebrow">Rejoindre le système</div>
+        <h1 class="hero-title">Inscription<br><em>sécurisée</em></h1>
+        <p class="hero-subtitle">
+          Créez votre compte hôpital ou assureur. Un administrateur validera votre demande avant activation.
+        </p>
+      </div>
+
+      <div class="process">
+        <div class="process-item">
+          <div class="step-num">1</div>
+          <div class="step-txt"><strong>Remplissez le formulaire</strong> — Email, mot de passe et informations de votre entité.</div>
+        </div>
+        <div class="process-item">
+          <div class="step-num">2</div>
+          <div class="step-txt"><strong>Validation admin</strong> — Votre demande sera examinée et approuvée par un administrateur.</div>
+        </div>
+        <div class="process-item">
+          <div class="step-num">3</div>
+          <div class="step-txt"><strong>Accès accordé</strong> — Connectez-vous et utilisez les preuves ZK médicales.</div>
+        </div>
+      </div>
+
+      <div class="crypto-bar">
+        <span>Pedersen :</span> C = g<sup>v</sup> · h<sup>r</sup> mod p<br>
+        <span>Fiat-Shamir :</span> c = H(C, R, label, p, g, h) mod q<br>
+        <span>RFC 3526 —</span> Groupe MODP 2048 bits
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT -->
+  <main class="panel-right">
+    <div class="form-wrapper">
+      <div class="form-top">
+        <div class="form-eyebrow">Créer un compte</div>
+        <h2 class="form-title">Inscription</h2>
+        <p class="form-sub">Sélectionnez votre rôle puis complétez les informations.</p>
+      </div>
+
+      {% if error %}
+      <div class="alert alert-danger">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('auth.register') }}" id="reg-form">
+        <input type="hidden" name="role" id="roleInput" value="hospital">
+
+        <!-- Role selection -->
+        <div class="role-grid">
+          <button type="button" class="role-card active" data-role="hospital" onclick="setRole(this)">
+            <div class="role-card-check">
+              <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+            </div>
+            <div class="role-icon">🏥</div>
+            <div class="role-lbl">Hôpital</div>
+          </button>
+          <button type="button" class="role-card" data-role="insurer" onclick="setRole(this)">
+            <div class="role-card-check">
+              <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+            </div>
+            <div class="role-icon">🛡️</div>
+            <div class="role-lbl">Assureur</div>
+          </button>
+        </div>
+
+        <div class="divider">Compte</div>
+
+        <div class="field">
+          <label>Adresse email</label>
+          <div class="field-wrap">
+            <span class="field-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+            <input type="email" name="email" required placeholder="contact@entite.cm"
+                   value="{{ request.form.get('email', '') }}" autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-row2">
+          <div class="field">
+            <label>Mot de passe</label>
+            <div class="field-wrap">
+              <span class="field-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              <input type="password" id="pwd" name="password" required placeholder="Min. 6 caractères">
+              <button type="button" class="field-toggle" onclick="togglePwd('pwd','tp1')" id="tp1">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Confirmer</label>
+            <div class="field-wrap">
+              <span class="field-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              <input type="password" id="cpwd" name="confirm_password" required placeholder="Répéter">
+              <button type="button" class="field-toggle" onclick="togglePwd('cpwd','tp2')" id="tp2">
+                <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider" id="entityDivider">Hôpital</div>
+
+        <div class="field">
+          <label id="nomLabel">Nom de l'hôpital</label>
+          <div class="field-wrap">
+            <span class="field-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></span>
+            <input type="text" id="entity_nom" name="entity_nom" required
+                   placeholder="CHU de Yaoundé"
+                   value="{{ request.form.get('entity_nom', '') }}">
+          </div>
+        </div>
+
+        <div class="form-row2">
+          <div class="field">
+            <label>Ville</label>
+            <div class="field-wrap">
+              <span class="field-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 14 8 14s8-8.75 8-14a8 8 0 0 0-8-8z"/></svg></span>
+              <input type="text" name="entity_ville" placeholder="Yaoundé" value="{{ request.form.get('entity_ville', '') }}">
+            </div>
+          </div>
+          <div class="field">
+            <label>Pays</label>
+            <div class="field-wrap">
+              <span class="field-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+              <input type="text" name="entity_pays" placeholder="Cameroun" value="{{ request.form.get('entity_pays', 'Cameroun') }}">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          Soumettre la demande
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+        </button>
+      </form>
+
+      <p class="login-link">Déjà inscrit ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  function setRole(btn) {
+    document.querySelectorAll('.role-card').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const role = btn.dataset.role;
+    document.getElementById('roleInput').value = role;
+    const isH = role === 'hospital';
+    document.getElementById('entityDivider').textContent = isH ? 'Hôpital' : 'Assureur';
+    document.getElementById('nomLabel').textContent = isH ? "Nom de l'hôpital" : "Nom de l'assureur";
+    document.getElementById('entity_nom').placeholder = isH ? 'CHU de Yaoundé' : 'CNPS Cameroun';
+  }
+
+  function togglePwd(inputId, btnId) {
+    const inp = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    const eyeOpen = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    const eyeClosed = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    if (inp.type === 'password') { inp.type = 'text'; btn.querySelector('svg').innerHTML = eyeClosed; }
+    else { inp.type = 'password'; btn.querySelector('svg').innerHTML = eyeOpen; }
+  }
+
+  const saved = '{{ request.form.get("role", "hospital") }}';
+  const savedBtn = document.querySelector(`.role-card[data-role="${saved}"]`);
+  if (savedBtn) setRole(savedBtn);
+
+  const form = document.getElementById('reg-form');
+
+  if (form) {
+      form.addEventListener('submit', function() {
+          const btn = this.querySelector('.btn-submit');
+          if (btn) {
+              btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Envoi en cours...';
+              btn.disabled = true;
+          }
+      });
+  }
+</script>
+
+<style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+{% endblock %}

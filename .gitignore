@@ -1,0 +1,24 @@
+# --- Environnement Virtuel ---
+venv/
+env/
+ENV/
+
+# --- Caches Python ---
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Base de données locale ---
+instance/
+*.db
+
+# --- Configuration et clés secrètes ---
+.env
+# Note : on n'ajoute PAS .env.example ici pour qu'il soit envoyé sur GitHub
+
+# --- Fichiers système ou d'éditeurs (optionnel) ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "macros.html" import admin_sidebar with context %}
+{% block title %}Assureurs — Admin{% endblock %}
+{% block sidebar %}{{ admin_sidebar('insurers') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('admin.dashboard') }}">Admin</a><span>/</span>Assureurs</div>
+  <h1 class="page-title">Assureurs enregistrés</h1>
+  <p class="page-subtitle">{{ insurers|length }} assureur(s) — Affichage des 50 premiers</p>
+</div>
+<div class="card">
+  {% if insurers %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nom</th><th>Ville</th><th>Pays</th><th>Utilisateurs</th><th>Vérifications</th><th>Créé le</th></tr>
+      </thead>
+      <tbody>
+        {% for ins in insurers %}
+        <tr>
+          <td class="mono text-xs text-muted">{{ ins.id }}</td>
+          <td><strong>{{ ins.nom }}</strong></td>
+          <td>{{ ins.ville }}</td>
+          <td>{{ ins.pays }}</td>
+          <td class="mono">{{ ins.users.count() }}</td>
+          <td class="mono">{{ ins.verifications.count() }}</td>
+          <td class="text-xs text-muted">{{ ins.created_at.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon">🛡️</div><p class="text-muted text-sm">Aucun assureur enregistré.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

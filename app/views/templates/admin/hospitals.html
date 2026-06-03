@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "macros.html" import admin_sidebar with context %}
+{% block title %}Hôpitaux — Admin{% endblock %}
+{% block sidebar %}{{ admin_sidebar('hospitals') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a> / Hôpitaux</div>
+  <h1 class="page-title">Hôpitaux enregistrés</h1>
+  <p class="page-subtitle">{{ hospitals|length }} hôpital(aux) — Affichage des 50 premiers</p>
+</div>
+<div class="card">
+  {% if hospitals %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nom</th><th>Ville</th><th>Pays</th>
+            <th>Utilisateurs</th><th>Patients</th><th>Preuves</th><th>Créé le</th></tr>
+      </thead>
+      <tbody>
+        {% for h in hospitals %}
+        <tr>
+          <td class="text-muted mono">{{ h.id }}</td>
+          <td><strong>{{ h.nom }}</strong></td>
+          <td>{{ h.ville }}</td>
+          <td>{{ h.pays }}</td>
+          <td class="mono">{{ h.users.count() }}</td>
+          <td class="mono">{{ h.patients.count() }}</td>
+          <td class="mono">{{ h.proofs.count() }}</td>
+          <td class="text-xs text-muted">{{ h.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted text-sm">Aucun hôpital enregistré.</p>
+  {% endif %}
+</div>
+{% endblock %}

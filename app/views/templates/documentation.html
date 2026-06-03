@@ -1,0 +1,664 @@
+{% extends "base.html" %}
+{% block title %}Documentation — ZK Medical{% endblock %}
+
+{% block body %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0f1a14; --ink2: #2a3d30; --ink3: #6b7c72; --ink4: #9aaa9f;
+    --surface: #ffffff; --bg: #f4f3ef;
+    --accent: #2d6a4f; --accent2: #40916c; --accent3: #74c69d;
+    --accent-light: #d8f3dc;
+    --danger: #c1121f; --danger-lt: #fde8e8;
+    --border: #dcd9d1; --border2: #e8e5de;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+    --r: 8px; --r-lg: 14px;
+  }
+
+  html, body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--ink);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+
+  .nav-brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; outline: none; }
+  .nav-brand:hover { text-decoration: none; }
+  .nav-brand * { text-decoration: none; }
+
+  .nav-brand-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(45,106,79,0.25); border: 1.5px solid rgba(116,198,157,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 0.8rem; color: var(--accent3);
+  }
+
+  .nav-brand-name {
+    font-family: var(--serif); font-size: 1rem; font-weight: 700; color: #fff;
+  }
+  .nav-brand-name span { color: var(--accent3); }
+
+  .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+
+  .nav-links a {
+    padding: 0.4rem 0.85rem; border-radius: 6px;
+    font-size: 0.8rem; color: rgba(255,255,255,0.6);
+    text-decoration: none; transition: color 0.15s, background 0.15s;
+  }
+
+  .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+  .nav-links a.active { color: var(--accent3); background: rgba(45,106,79,0.2); }
+
+  .nav-cta {
+    padding: 0.45rem 1rem;
+    background: var(--accent); color: #fff !important;
+    border-radius: 6px; font-size: 0.78rem; font-weight: 500;
+    text-decoration: none; transition: background 0.2s;
+  }
+
+  .nav-cta:hover { background: var(--accent2) !important; }
+
+  /* ── HERO ── */
+  .doc-hero {
+    background: var(--ink);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .doc-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 30% 50%, rgba(45,106,79,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 70% 40%, rgba(64,145,108,0.15) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .doc-hero-content { position: relative; z-index: 2; max-width: 700px; margin: 0 auto; }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.3rem 0.9rem; border-radius: 20px;
+    background: rgba(45,106,79,0.25); border: 1px solid rgba(116,198,157,0.3);
+    font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent3); margin-bottom: 1.5rem;
+  }
+
+  .doc-hero h1 {
+    font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 1rem;
+  }
+
+  .doc-hero h1 em { font-style: italic; color: var(--accent3); }
+
+  .doc-hero p {
+    font-size: 0.95rem; color: rgba(255,255,255,0.5);
+    line-height: 1.75; max-width: 520px; margin: 0 auto 2rem;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .doc-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    max-width: 1100px;
+    margin: 0 auto;
+    gap: 0;
+    min-height: calc(100vh - 60px - 56px);
+  }
+
+  /* ── SIDEBAR DOC ── */
+  .doc-sidebar {
+    padding: 2rem 1.5rem;
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  .doc-sidebar::-webkit-scrollbar { width: 3px; }
+  .doc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .sidebar-section { margin-bottom: 2rem; }
+
+  .sidebar-section-title {
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink3); font-weight: 600; margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem; border-bottom: 1px solid var(--border2);
+  }
+
+  .sidebar-link {
+    display: block; padding: 0.45rem 0.75rem;
+    font-size: 0.8rem; color: var(--ink2);
+    text-decoration: none; border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+    border-left: 2px solid transparent;
+    margin-bottom: 2px;
+  }
+
+  .sidebar-link:hover { background: var(--accent-light); color: var(--accent); }
+  .sidebar-link.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+
+  /* ── CONTENT ── */
+  .doc-content {
+    padding: 2.5rem 3rem 4rem;
+    max-width: 780px;
+  }
+
+  .doc-section { margin-bottom: 3.5rem; }
+
+  .doc-section-anchor { display: block; height: 60px; margin-top: -60px; visibility: hidden; }
+
+  .doc-section h2 {
+    font-family: var(--serif); font-size: 1.5rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 0.75rem;
+    padding-bottom: 0.6rem; border-bottom: 2px solid var(--accent-light);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+
+  .section-badge {
+    font-family: var(--mono); font-size: 0.6rem; font-weight: 500;
+    padding: 0.2rem 0.55rem; border-radius: 4px;
+    background: var(--accent-light); color: var(--accent);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .doc-section h3 {
+    font-family: var(--serif); font-size: 1.05rem; font-weight: 600;
+    color: var(--ink2); margin: 1.75rem 0 0.6rem;
+  }
+
+  .doc-section p {
+    font-size: 0.88rem; color: var(--ink2);
+    line-height: 1.8; margin-bottom: 1rem;
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--ink); border-radius: var(--r);
+    padding: 1.25rem 1.5rem; margin: 1.25rem 0;
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    font-family: var(--mono); font-size: 0.75rem;
+    color: var(--accent3); line-height: 1.9;
+    white-space: pre;
+  }
+
+  .code-block .kw { color: #e5c07b; }
+  .code-block .cm { color: rgba(116,198,157,0.4); font-style: italic; }
+  .code-block .st { color: #98c379; }
+  .code-block .nu { color: #d19a66; }
+
+  /* Algo steps */
+  .algo-steps { list-style: none; margin: 1rem 0; }
+
+  .algo-step {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 0.85rem 1rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); margin-bottom: 0.6rem;
+    transition: border-color 0.15s;
+  }
+
+  .algo-step:hover { border-color: var(--accent3); }
+
+  .algo-step-num {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: var(--ink); color: var(--accent3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+  }
+
+  .algo-step-body { flex: 1; }
+
+  .algo-step-title {
+    font-size: 0.82rem; font-weight: 600; color: var(--ink);
+    margin-bottom: 0.2rem;
+  }
+
+  .algo-step-desc {
+    font-size: 0.78rem; color: var(--ink3); line-height: 1.5;
+    font-family: var(--mono);
+  }
+
+  /* Formula card */
+  .formula-card {
+    background: var(--ink); border-radius: var(--r-lg);
+    padding: 1.5rem 1.75rem; margin: 1.25rem 0;
+  }
+
+  .formula-label {
+    font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(116,198,157,0.5); margin-bottom: 0.85rem;
+    font-family: var(--mono);
+  }
+
+  .formula-eq {
+    font-family: var(--mono); font-size: 0.85rem;
+    color: rgba(116,198,157,0.85); line-height: 2;
+  }
+
+  .formula-eq .var { color: #e5c07b; }
+  .formula-eq .op  { color: rgba(255,255,255,0.4); }
+  .formula-eq .cm  { color: rgba(116,198,157,0.35); font-style: italic; }
+
+  /* Table */
+  .doc-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.8rem; margin: 1rem 0;
+  }
+
+  .doc-table th {
+    padding: 0.6rem 1rem; text-align: left;
+    font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink3); background: var(--bg);
+    border-bottom: 1.5px solid var(--border);
+  }
+
+  .doc-table td {
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--border2);
+    color: var(--ink2); font-family: var(--mono); font-size: 0.75rem;
+  }
+
+  .doc-table tr:last-child td { border-bottom: none; }
+
+  /* Alert info */
+  .doc-alert {
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    padding: 1rem 1.25rem; border-radius: var(--r);
+    font-size: 0.82rem; line-height: 1.6; margin: 1.25rem 0;
+  }
+
+  .doc-alert-info {
+    background: #e0f2fe; border-left: 3px solid #38bdf8; color: #0369a1;
+  }
+
+  .doc-alert-success {
+    background: var(--accent-light); border-left: 3px solid var(--accent); color: #1b4332;
+  }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    background: var(--ink);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 1.25rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+  }
+
+  .footer-copy { font-size: 0.68rem; color: rgba(255,255,255,0.35); }
+
+  .footer-links { display: flex; align-items: center; gap: 1.5rem; }
+
+  .footer-links a {
+    font-size: 0.68rem; color: rgba(255,255,255,0.4);
+    text-decoration: none; transition: color 0.15s;
+  }
+
+  .footer-links a:hover { color: var(--accent3); }
+
+  .footer-badge {
+    font-family: var(--mono); font-size: 0.6rem; color: var(--accent3);
+    background: rgba(45,106,79,0.15); border: 1px solid rgba(45,106,79,0.3);
+    padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.05em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .doc-layout { grid-template-columns: 1fr; }
+    .doc-sidebar { display: none; }
+    .doc-content { padding: 1.5rem 1.25rem 3rem; }
+    .doc-hero { padding: 3rem 1.25rem 2.5rem; }
+    .top-nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .doc-footer { flex-direction: column; text-align: center; gap: 0.75rem; }
+  }
+
+  @media (max-width: 480px) {
+    .doc-hero h1 { font-size: 1.75rem; }
+    .formula-eq { font-size: 0.72rem; }
+  }
+</style>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <a href="{{ url_for('auth.login') }}" class="nav-brand">
+    <div class="nav-brand-icon">ZK</div>
+    <div class="nav-brand-name">ZK <span>Medical</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="{{ url_for('auth.login') }}">Connexion</a>
+    <a href="{{ url_for('auth.register') }}">Inscription</a>
+    <a href="#" class="active">Documentation</a>
+    <a href="/a-propos">À propos</a>
+    <a href="/contact">Contact</a>
+  </div>
+  <a href="{{ url_for('auth.login') }}" class="nav-cta">Accéder →</a>
+</nav>
+
+<!-- HERO -->
+<div class="doc-hero">
+  <div class="doc-hero-content">
+    <div class="hero-badge">Documentation technique v1.0</div>
+    <h1>Preuves ZK pour données <em>médicales</em></h1>
+    <p>Architecture cryptographique, protocoles implémentés et guide d'utilisation du système ZK Medical Proof.</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="doc-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Introduction</div>
+      <a href="#apercu" class="sidebar-link active">Aperçu du système</a>
+      <a href="#acteurs" class="sidebar-link">Entités principales</a>
+      <a href="#predicate" class="sidebar-link">Prédicat ZK</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Cryptographie</div>
+      <a href="#pedersen" class="sidebar-link">Engagement de Pedersen</a>
+      <a href="#range" class="sidebar-link">Range Proof binaire</a>
+      <a href="#sigma" class="sidebar-link">Protocole Sigma</a>
+      <a href="#fiat-shamir" class="sidebar-link">Heuristique Fiat-Shamir</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Paramètres</div>
+      <a href="#params" class="sidebar-link">Groupe RFC 3526</a>
+      <a href="#metriques" class="sidebar-link">Métriques pratiques</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Flux</div>
+      <a href="#hopital" class="sidebar-link">Côté hôpital</a>
+      <a href="#assureur" class="sidebar-link">Côté assureur</a>
+      <a href="#securite" class="sidebar-link">Garanties</a>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="doc-content">
+
+    <!-- Aperçu -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="apercu"></span>
+      <h2>Aperçu du système <span class="section-badge">intro</span></h2>
+      <p>ZK Medical Proof est un prototype de système de preuves à connaissance nulle (Zero-Knowledge Proofs) appliqué à la confidentialité des données médicales. Il permet à un hôpital de certifier une propriété sur un dossier patient — ici que la température corporelle est inférieure à 38°C — sans jamais transmettre la valeur réelle à l'assureur vérificateur.</p>
+      <div class="doc-alert doc-alert-success">
+        ✓ La valeur réelle de la température ne figure <strong>jamais</strong> dans la preuve transmise. Seul le résultat du prédicat (satisfait ou non) peut être déduit après vérification.
+      </div>
+    </div>
+
+    <!-- Acteurs -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="acteurs"></span>
+      <h2>Entités principales</h2>
+      <table class="doc-table">
+        <thead>
+          <tr><th>Entité</th><th>Rôle ZK</th><th>Opération</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>🏥 Hôpital</td><td>Prouveur</td><td>Génère la preuve ZK sur la température du patient</td></tr>
+          <tr><td>🛡️ Assureur</td><td>Vérifieur</td><td>Vérifie la preuve sans connaître la température</td></tr>
+          <tr><td>⚙️ Admin</td><td>Gestionnaire</td><td>Valide les inscriptions, consulte les métriques</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Prédicat -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="predicate"></span>
+      <h2>Prédicat ZK</h2>
+      <p>Le prédicat implémenté est : prouver que la température corporelle <code>T</code> d'un patient satisfait <code>T &lt; 38°C</code>, sans révéler la valeur exacte de <code>T</code>.</p>
+      <p>Pour supporter une précision décimale arbitraire (ex: 37.1253°C), les valeurs sont converties en entiers via un facteur d'échelle <code>scale = 10^d</code> où <code>d</code> est le nombre de décimales.</p>
+    </div>
+
+    <!-- Pedersen -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="pedersen"></span>
+      <h2>Engagement de Pedersen <span class="section-badge">crypto</span></h2>
+      <p>Le schéma d'engagement de Pedersen permet de "verrouiller" une valeur secrète dans un engagement public, sans le révéler. L'engagement est homomorphique : deux engagements peuvent être combinés.</p>
+      <div class="formula-card">
+        <div class="formula-label">Pedersen Commitment</div>
+        <div class="formula-eq">
+          <span class="var">C</span> <span class="op">=</span> <span class="var">g</span><sup><span class="var">v</span></sup> <span class="op">·</span> <span class="var">h</span><sup><span class="var">r</span></sup> <span class="op">mod</span> <span class="var">p</span>
+          <span class="cm">  — v : valeur secrète, r : blinding aléatoire</span>
+        </div>
+        <div class="formula-eq" style="margin-top:0.6rem">
+          <span class="var">C(v₁)</span> <span class="op">·</span> <span class="var">C(v₂)</span> <span class="op">=</span> <span class="var">C(v₁ + v₂)</span>
+          <span class="cm">  — propriété homomorphique</span>
+        </div>
+      </div>
+      <p>La sécurité repose sur l'hypothèse du logarithme discret : personne ne peut calculer <code>log_g(h)</code> dans le groupe de 2048 bits, ce qui rend impossible l'ouverture d'un engagement de deux façons différentes.</p>
+    </div>
+
+    <!-- Range Proof -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="range"></span>
+      <h2>Range Proof binaire <span class="section-badge">crypto</span></h2>
+      <p>Pour prouver que <code>w = v - lo ∈ [0, hi - lo)</code>, on décompose <code>w</code> en bits et on engage chaque bit séparément.</p>
+      <ul class="algo-steps">
+        <li class="algo-step">
+          <div class="algo-step-num">1</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Mise à l'échelle</div>
+            <div class="algo-step-desc">v_int = T × scale, w = v_int - lo_int</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">2</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Décomposition binaire</div>
+            <div class="algo-step-desc">w = Σ bᵢ × 2ⁱ, Cᵢ = g^bᵢ · h^rᵢ mod p</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">3</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Blinding cohérent</div>
+            <div class="algo-step-desc">r_w = Σ rᵢ × 2ⁱ mod q → C_w = g^w · h^r_w mod p</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">4</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Preuve OR disjonctive (Cramer-Damgård-Schoenmakers)</div>
+            <div class="algo-step-desc">Pour chaque bit : prouver que Cᵢ engage 0 ou 1, sans révéler lequel</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">5</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Knowledge proof sur C_w</div>
+            <div class="algo-step-desc">Protocole Sigma de Schnorr sur (w, r_w) dans C_w</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Sigma -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="sigma"></span>
+      <h2>Protocole Sigma (Schnorr) <span class="section-badge">crypto</span></h2>
+      <p>Le protocole Sigma prouve la connaissance de <code>(w, r_w)</code> tels que <code>C_w = g^w · h^r_w</code>, sans révéler ces valeurs. Rendu non-interactif via Fiat-Shamir.</p>
+      <div class="formula-card">
+        <div class="formula-label">Génération de la preuve</div>
+        <div class="formula-eq">
+k₁, k₂ <span class="op">←</span> aléatoires ∈ [0, q)<br>
+R <span class="op">=</span> g<sup>k₁</sup> · h<sup>k₂</sup> <span class="op">mod</span> p<br>
+c <span class="op">=</span> H(C_w, R, label, p, g, h) <span class="op">mod</span> q<br>
+s₁ <span class="op">=</span> k₁ − c·w <span class="op">mod</span> q<br>
+s₂ <span class="op">=</span> k₂ − c·r_w <span class="op">mod</span> q
+        </div>
+      </div>
+      <div class="formula-card" style="margin-top:1rem">
+        <div class="formula-label">Vérification</div>
+        <div class="formula-eq">
+g<sup>s₁</sup> · h<sup>s₂</sup> · C_w<sup>c</sup> <span class="op">mod</span> p <span class="op">==</span> R
+        </div>
+      </div>
+    </div>
+
+    <!-- Fiat-Shamir -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="fiat-shamir"></span>
+      <h2>Heuristique de Fiat-Shamir</h2>
+      <p>Le défi interactif du vérifieur est remplacé par un hash cryptographique des éléments publics, rendant la preuve non-interactive et transmissible sans échange en temps réel :</p>
+      <div class="formula-card">
+        <div class="formula-label">Défi non-interactif</div>
+        <div class="formula-eq">c <span class="op">=</span> SHA-256(C, R, label, p, g, h) <span class="op">mod</span> q</div>
+      </div>
+    </div>
+
+    <!-- Params -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="params"></span>
+      <h2>Paramètres cryptographiques <span class="section-badge">config</span></h2>
+      <table class="doc-table">
+        <thead><tr><th>Paramètre</th><th>Valeur</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>p</td><td>RFC 3526 Group 14</td><td>Safe prime 2048 bits (MODP Group 14)</td></tr>
+          <tr><td>q</td><td>(p−1) / 2</td><td>Ordre du sous-groupe, également premier</td></tr>
+          <tr><td>g</td><td>2</td><td>Générateur du groupe</td></tr>
+          <tr><td>h</td><td>SHA-256 dérivé</td><td>Second générateur, relation DL inconnue</td></tr>
+          <tr><td>Hash</td><td>SHA-256</td><td>Fonction de hachage pour Fiat-Shamir</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Métriques -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="metriques"></span>
+      <h2>Métriques pratiques</h2>
+      <p>Les performances observées sur le prédicat T &lt; 38°C avec des températures à 4 décimales (n_bits = 20 environ) :</p>
+      <table class="doc-table">
+        <thead><tr><th>Métrique</th><th>Valeur typique</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Temps de génération</td><td>~ 2 000 – 13 000 ms</td><td>Exponentiations 2048 bits en Python pur</td></tr>
+          <tr><td>Temps de vérification</td><td>~ 2 000 – 15 000 ms</td><td>Même opérations côté assureur</td></tr>
+          <tr><td>Taille de la preuve</td><td>~ 50 – 150 KB</td><td>JSON sérialisé, proportionnel à n_bits</td></tr>
+          <tr><td>Nombre de bits</td><td>max(8, ⌈log₂(38×scale)⌉)</td><td>Dépend de la précision décimale</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-alert doc-alert-info">
+        ℹ️ Ces temps seraient réduits de plusieurs ordres de grandeur avec une bibliothèque cryptographique native (C/Rust) ou des courbes elliptiques. L'implémentation Python pure est intentionnelle dans le cadre de ce prototype pédagogique.
+      </div>
+    </div>
+
+    <!-- Hôpital -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="hopital"></span>
+      <h2>Flux côté hôpital <span class="section-badge">usage</span></h2>
+      <ul class="algo-steps">
+        <li class="algo-step">
+          <div class="algo-step-num">1</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Enregistrement du patient</div>
+            <div class="algo-step-desc">Nom, prénom, âge, température mesurée T (stockée chiffrée côté serveur)</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">2</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Sélection de l'assureur destinataire</div>
+            <div class="algo-step-desc">Seuls les assureurs avec compte actif sont listés</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">3</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Génération de la preuve ZK</div>
+            <div class="algo-step-desc">BulletproofsHandler.generate(T) → preuve JSON sérialisée</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">4</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Envoi à l'assureur</div>
+            <div class="algo-step-desc">La preuve est stockée et rendue disponible au vérifieur désigné</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Assureur -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="assureur"></span>
+      <h2>Flux côté assureur <span class="section-badge">usage</span></h2>
+      <ul class="algo-steps">
+        <li class="algo-step">
+          <div class="algo-step-num">1</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Réception de la preuve</div>
+            <div class="algo-step-desc">Liste des preuves disponibles dans le tableau de bord</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">2</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Vérification des bit-proofs</div>
+            <div class="algo-step-desc">Pour chaque Cᵢ : (c0 + c1) mod q == H(Cᵢ, R0, R1, label)</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">3</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Vérification de la cohérence</div>
+            <div class="algo-step-desc">C_reconstruit = Π Cᵢ^{2^i} mod p == C_w</div>
+          </div>
+        </li>
+        <li class="algo-step">
+          <div class="algo-step-num">4</div>
+          <div class="algo-step-body">
+            <div class="algo-step-title">Vérification du Knowledge Proof</div>
+            <div class="algo-step-desc">g^s₁ · h^s₂ · C_w^c mod p == R</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Garanties -->
+    <div class="doc-section">
+      <span class="doc-section-anchor" id="securite"></span>
+      <h2>Garanties cryptographiques <span class="section-badge">sécurité</span></h2>
+      <table class="doc-table">
+        <thead><tr><th>Propriété</th><th>Garantie</th><th>Hypothèse</th></tr></thead>
+        <tbody>
+          <tr><td>Soundness</td><td>Computationnelle</td><td>Logarithme discret (DL assumption) sur groupe 2048 bits</td></tr>
+          <tr><td>Zero-Knowledge</td><td>Parfait (SHVZK)</td><td>Simulateur parfait pour le vérifieur honnête</td></tr>
+          <tr><td>Non-interactivité</td><td>Modèle ROM</td><td>Fiat-Shamir dans le modèle oracle aléatoire</td></tr>
+          <tr><td>Hiding</td><td>Parfait</td><td>Engagement de Pedersen sur groupe d'ordre premier</td></tr>
+          <tr><td>Binding</td><td>Computationnel</td><td>log_g(h) inconnu (DL assumption)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="doc-footer">
+  <div class="footer-copy">© 2026 ZK Medical Proof — UE Projet — Informatique M1 Sécurité</div>
+  <div class="footer-links">
+    <a href="#">Documentation</a>
+    <a href="/a-propos">À propos</a>
+    <a href="/contact">Contact</a>
+  </div>
+  <div class="footer-badge">RFC 3526 · 2048-bits</div>
+</footer>
+
+{% endblock %}

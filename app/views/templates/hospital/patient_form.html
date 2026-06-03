@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "macros.html" import hospital_sidebar with context %}
+{% block title %}{% if action=='edit' %}Modifier{% else %}Nouveau{% endif %} patient{% endblock %}
+{% block sidebar %}{{ hospital_sidebar(hospital, 'patients') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="{{ url_for('hospital.dashboard') }}">Dashboard</a> /
+    <a href="{{ url_for('hospital.patients_list') }}">Patients</a> /
+    {% if action=='edit' %}Modifier{% else %}Nouveau{% endif %}
+  </div>
+  <h1 class="page-title">
+    {% if action=='edit' %}Modifier : {{ patient.full_name() }}{% else %}Nouveau patient{% endif %}
+  </h1>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<div style="max-width:520px">
+  <div class="card">
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form method="POST">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" name="prenom"
+                 value="{{ patient.prenom if patient else '' }}"
+                 placeholder="Jean" required>
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" name="nom"
+                 value="{{ patient.nom if patient else '' }}"
+                 placeholder="Dupont" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Âge</label>
+        <input type="number" name="age" min="0" max="130" step="1"
+               value="{{ patient.age if patient else '' }}"
+               placeholder="35" required>
+      </div>
+
+      <div class="form-group">
+        <label>Température corporelle (°C)</label>
+        <input type="number" name="temperature" id="temperature-input"
+               step="0.0001" min="0" max="45"
+               value="{{ patient.temperature if patient else '' }}"
+               placeholder="Ex: 25.784">
+        <div class="form-hint">
+          Précision arbitraire acceptée (ex: 37.1253). Le prédicat ZK vérifie T &lt; 38°C.
+        </div>
+        <div id="temp-precision-warn"
+             style="display:none;margin-top:0.35rem;font-size:0.72rem;
+                    color:var(--warn);background:var(--warn-light);
+                    padding:0.4rem 0.75rem;border-radius:var(--radius);
+                    border-left:3px solid var(--warn);">
+          ⚠ La température ne peut pas avoir plus de 4 décimales (ex: 37.1253).
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+        <button type="submit" class="btn btn-accent" id="submit-btn">
+          {% if action=='edit' %}💾 Enregistrer{% else %}+ Créer le patient{% endif %}
+        </button>
+        <a href="{{ url_for('hospital.patients_list') }}" class="btn btn-outline">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const tempInput = document.getElementById('temperature-input');
+  const warn = document.getElementById('temp-precision-warn');
+  const submitBtn = document.getElementById('submit-btn');
+
+  tempInput.addEventListener('input', function() {
+    const val = this.value;
+    const dotIndex = val.indexOf('.');
+    const tooManyDecimals = dotIndex !== -1 && val.length - dotIndex - 1 > 4;
+    warn.style.display = tooManyDecimals ? 'block' : 'none';
+    submitBtn.disabled = tooManyDecimals;
+  });
+</script>
+{% endblock %}

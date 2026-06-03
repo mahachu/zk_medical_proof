@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% from "macros.html" import admin_sidebar with context %}
+{% block title %}Métriques ZK — Admin{% endblock %}
+{% block sidebar %}{{ admin_sidebar('metrics') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('admin.dashboard') }}">Admin</a><span>/</span>Métriques</div>
+  <h1 class="page-title">Métriques de performance ZK</h1>
+  <p class="page-subtitle">Données persistantes — toutes les vérifications effectuées</p>
+</div>
+
+{% if metrics.total == 0 %}
+<div class="empty-state">
+  <div class="empty-icon">▣</div>
+  <p class="serif" style="font-size:1rem;color:var(--ink3);margin-bottom:0.4rem;">Aucune donnée disponible</p>
+  <p class="text-sm text-muted">Les métriques apparaissent après chaque vérification d'un assureur.</p>
+</div>
+{% else %}
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total vérifications</div>
+    <div class="stat-value">{{ metrics.total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Taux de succès</div>
+    <div class="stat-value" style="color:var(--accent)">{{ metrics.success_rate }}%</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Génération moy.</div>
+    <div class="stat-value">{{ metrics.avg_gen_ms }}</div>
+    <div class="stat-sub">ms</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Vérification moy.</div>
+    <div class="stat-value">{{ metrics.avg_ver_ms }}</div>
+    <div class="stat-sub">ms</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Taille preuve moy.</div>
+    <div class="stat-value">{{ metrics.avg_size_kb }}</div>
+    <div class="stat-sub">KB</div>
+  </div>
+</div>
+
+<!-- Analyse limites pratiques -->
+{% if metrics.records %}
+{% set gen_times = metrics.records | map(attribute='gen_ms') | list %}
+{% set ver_times = metrics.records | map(attribute='ver_ms') | list %}
+{% set sizes_kb  = metrics.records | map(attribute='size_bytes') | list %}
+
+<div class="card mb-6" style="background:var(--ink);border-color:rgba(255,255,255,0.08);">
+  <div class="card-title" style="color:var(--accent3);font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:1.25rem;">
+    Analyse des limites pratiques
+  </div>
+  <div class="grid-3" style="gap:1.5rem;">
+    <div>
+      <div style="color:var(--accent3);font-size:0.72rem;font-weight:600;margin-bottom:0.5rem;">Taille de la preuve</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);line-height:1.7;">
+        Proportionnelle au nombre de bits. Chaque bit produit une preuve OR-Sigma sérialisée,
+        conduisant à des tailles entre
+        <strong style="color:#f8f4e8;">
+          ~{{ (sizes_kb | min / 1024) | round(2) }} – {{ (sizes_kb | max / 1024) | round(2) }} KB
+        </strong>.
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--accent3);font-size:0.72rem;font-weight:600;margin-bottom:0.5rem;">Temps de génération</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);line-height:1.7;">
+        Exponentiations modulaires sur 2048 bits en Python pur.
+        Temps observés entre
+        <strong style="color:#f8f4e8;">
+          ~{{ gen_times | min | round(2) }} – {{ gen_times | max | round(2) }} ms
+        </strong>.
+      </div>
+    </div>
+    <div>
+      <div style="color:var(--accent3);font-size:0.72rem;font-weight:600;margin-bottom:0.5rem;">Temps de vérification</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);line-height:1.7;">
+        Validation complète (bit-proofs, cohérence homomorphique, Sigma).
+        Temps entre
+        <strong style="color:#f8f4e8;">
+          ~{{ ver_times | min | round(2) }} – {{ ver_times | max | round(2) }} ms
+        </strong>.
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Détail des vérifications ({{ metrics.records|length }})</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>UID Preuve</th><th>Hôpital</th><th>Assureur</th>
+          <th>Génér. (ms)</th><th>Vérif. (ms)</th><th>Taille (KB)</th>
+          <th>Valide</th><th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in metrics.records %}
+        <tr>
+          <td class="mono text-xs">{{ r.proof_uid[:16] }}…</td>
+          <td class="text-sm">{{ r.hospital }}</td>
+          <td class="text-sm">{{ r.insurer }}</td>
+          <td class="mono">{{ r.gen_ms }}</td>
+          <td class="mono">{{ r.ver_ms }}</td>
+          <td class="mono">{{ (r.size_bytes / 1024)|round(3) }}</td>
+          <td>
+            {% if r.valid %}<span class="badge badge-success">Oui</span>
+            {% else %}<span class="badge badge-danger">Non</span>{% endif %}
+          </td>
+          <td class="mono text-xs text-muted">{{ r.ts[:16].replace('T',' ') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

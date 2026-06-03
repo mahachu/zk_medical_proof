@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% from "macros.html" import insurer_sidebar with context %}
+{% block title %}Vérifier une preuve{% endblock %}
+{% block sidebar %}{{ insurer_sidebar(insurer, 'verify') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('insurer.dashboard') }}">Dashboard</a> / Vérification</div>
+  <h1 class="page-title">Vérification ZK</h1>
+  <p class="page-subtitle">Le vérifieur ne connaît jamais la valeur réelle</p>
+</div>
+
+<!-- LIGNE 1 : Preuves disponibles (pleine largeur) -->
+{% if available_proofs %}
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="card-title">Preuves disponibles</div>
+  <div class="table-wrap">
+    <table style="border-spacing:0;width:100%;">
+      <thead>
+        <tr>
+          <th style="width:20%;padding-right:1.5rem">UID Preuve</th>
+          <th style="width:25%;padding-right:1.5rem">Nom Complet Patient</th>
+          <th style="width:20%;padding-right:1.5rem">Hôpital</th>
+          <th style="width:12%;padding-right:1.5rem">Date Génér.</th>
+          <th style="width:10%;padding-right:1rem">Télécharger</th>
+          <th style="width:13%">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pr in available_proofs[:10] %}
+        <tr>
+          <td class="mono text-xs" style="padding-right:1.5rem">{{ pr.proof_uid[:14] }}…</td>
+          <td class="text-xs" style="padding-right:1.5rem">{{ pr.patient.full_name() if pr.patient else '—' }}</td>
+          <td class="text-xs" style="padding-right:1.5rem">{{ pr.hospital.nom if pr.hospital else '—' }}</td>
+          <td class="text-xs text-muted" style="padding-right:1.5rem">{{ pr.generated_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td style="padding-right:1rem">
+            <a href="{{ url_for('insurer.download_proof', proof_uid=pr.proof_uid) }}"
+               class="btn btn-outline"
+               style="font-size:0.65rem;padding:0.2rem 0.5rem;"
+               download>
+              ⬇ .json
+            </a>
+          </td>
+          <td>
+            <button class="btn btn-accent"
+                    onclick="fillUid('{{ pr.proof_uid }}')"
+                    style="font-size:0.65rem;padding:0.2rem 0.5rem;">
+              Sélectionner
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- LIGNE 2 : Protocole + Lancer la vérification -->
+<div class="grid-2">
+
+  <!-- COL 1 : Protocole -->
+  <div class="card">
+    <div class="card-title">Protocole de vérification</div>
+    <div class="step-indicator">
+      <div class="step active">1. Bit proofs</div>
+      <div class="step active">2. Cohérence</div>
+      <div class="step active">3. Sigma</div>
+    </div>
+    <p class="text-sm text-muted">
+      Pour chaque bit du commitment, le vérifieur contrôle la preuve OR (0 ou 1).
+      Il vérifie ensuite la cohérence C_w = Π C_i^{2^i} mod p.
+      Enfin, il valide le protocole Sigma sur l'ouverture.
+    </p>
+    <div class="zk-divider">Garanties</div>
+    <ul style="list-style:none;font-size:0.78rem;line-height:2.2;color:var(--ink2)">
+      <li>✓ Soundness computationnelle (DL assumption)</li>
+      <li>✓ Zero-knowledge parfait</li>
+      <li>✓ Non-interactive (Fiat-Shamir)</li>
+      <li>✓ Pas d'interaction avec l'hôpital</li>
+    </ul>
+  </div>
+
+  <!-- COL 2 : Lancer la vérification -->
+  <div class="card">
+    <div class="card-title">Lancer la vérification</div>
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <form method="POST" id="verify-form">
+      <div class="form-group">
+        <label>Identifiant de preuve (UID)</label>
+        <input type="text" name="proof_uid" id="proof-uid-input"
+               value="{{ request.form.get('proof_uid','') }}"
+               placeholder="Ex: A1B2C3D4-…" required
+               style="font-family:var(--mono);font-size:0.75rem">
+        <div class="form-hint">Vous pouvez soit sélectionner la preuve, soit copier l'UID depuis le fichier .json téléchargé.</div>
+      </div>
+
+      <div class="alert alert-info" style="font-size:0.75rem;margin-bottom:1.25rem">
+        ℹ️ La vérification s'effectue <strong>sans connaître la température réelle</strong>.
+        Seul le résultat du prédicat (T &lt; 38°C) est produit.
+      </div>
+
+      <button type="submit" class="btn btn-accent" id="verify-btn"
+              style="width:100%;justify-content:center">
+        ✓ Vérifier la preuve
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function fillUid(uid) {
+  document.getElementById('proof-uid-input').value = uid;
+  document.getElementById('proof-uid-input').focus();
+}
+document.getElementById('verify-form').addEventListener('submit', function() {
+  const btn = document.getElementById('verify-btn');
+  btn.textContent = '⏳ Vérification en cours…';
+  btn.disabled = true;
+});
+</script>
+{% endblock %}

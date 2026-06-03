@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "macros.html" import admin_sidebar with context %}
+{% block title %}Preuves ZK — Admin{% endblock %}
+{% block sidebar %}{{ admin_sidebar('proofs') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="{{ url_for('admin.dashboard') }}">Admin</a><span>/</span>Preuves</div>
+  <h1 class="page-title">Toutes les preuves ZK</h1>
+  <p class="page-subtitle">{{ proofs|length }} preuve(s) générée(s)</p>
+</div>
+<div class="card">
+  {% if proofs %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>UID</th><th>Hôpital</th><th>Patient</th><th>Assureur</th>
+          <th>Prédicat</th><th>Taille (KB)</th><th>Génér. (ms)</th>
+          <th>Vérification</th><th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in proofs %}
+        {% set ver = p.verifications.first() %}
+        <tr>
+          <td class="mono text-xs">{{ p.proof_uid[:14] }}…</td>
+          <td class="text-sm">{{ p.hospital.nom if p.hospital else '—' }}</td>
+          <td class="text-sm">{{ p.patient.full_name() if p.patient else '—' }}</td>
+          <td class="text-sm">{{ p.target_insurer.nom if p.target_insurer else '—' }}</td>
+          <td><span class="badge badge-success">{{ p.predicate }}</span></td>
+          <td class="mono">{{ (p.proof_size_bytes/1024)|round(2) }}</td>
+          <td class="mono">{{ p.generation_time_ms|round(1) }}</td>
+          <td>
+            {% if ver %}
+              {% if ver.is_valid %}<span class="badge badge-success">Valide</span>
+              {% else %}<span class="badge badge-danger">Invalide</span>{% endif %}
+            {% else %}
+              <span class="badge badge-neutral">En attente</span>
+            {% endif %}
+          </td>
+          <td class="text-xs text-muted">{{ p.generated_at.strftime('%d/%m/%y %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-icon">◫</div><p class="text-muted text-sm">Aucune preuve générée.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

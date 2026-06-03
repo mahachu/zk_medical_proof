@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "macros.html" import insurer_sidebar with context %}
+{% block title %}Vérifications — {{ insurer.nom }}{% endblock %}
+{% block sidebar %}{{ insurer_sidebar(insurer, 'verifications') }}{% endblock %}
+{% block content %}
+<div class="page-header flex items-center justify-between">
+  <div>
+    <div class="breadcrumb"><a href="{{ url_for('insurer.dashboard') }}">Dashboard</a> / Vérifications</div>
+    <h1 class="page-title">Historique des vérifications</h1>
+    <p class="page-subtitle">{{ verifications|length }} vérification(s)</p>
+  </div>
+  <a href="{{ url_for('insurer.verify') }}" class="btn btn-accent">✓ Nouvelle vérification</a>
+</div>
+
+{% if verifications %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>UID Vérification</th><th>UID Preuve</th>
+          <th>Nom Complet Patient</th><th>Hôpital</th>
+          <th>Résultat Vérif.</th><th>Range Proof</th><th>Sigma</th>
+          <th>Temps (ms)</th><th>Taille(KB)</th><th>Date Vérif.</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in verifications %}
+        <tr>
+          <td class="mono text-xs">{{ v.verification_uid[:12] }}…</td>
+          <td class="mono text-xs">{{ v.proof.proof_uid[:12] }}…</td>
+          <td class="mono text-xs">{{ v.proof.patient.full_name() if v.proof.patient else '—'}}</td>
+          <td class="mono text-xs">{{ v.proof.hospital.nom if v.proof.hospital else '—' }}</td>
+          <td>
+            <span class="badge {% if v.is_valid %}badge-success{% else %}badge-danger{% endif %}">
+              {% if v.is_valid %} Valide{% else %} Invalide{% endif %}
+            </span>
+          </td>
+          <td>
+            <span class="badge {% if v.range_proof_valid %}badge-success{% else %}badge-danger{% endif %}">
+              {% if v.range_proof_valid %}✓{% else %}✗{% endif %}
+            </span>
+          </td>
+          <td>
+            <span class="badge {% if v.knowledge_proof_valid %}badge-success{% else %}badge-danger{% endif %}">
+              {% if v.knowledge_proof_valid %}✓{% else %}✗{% endif %}
+            </span>
+          </td>
+          <td class="mono">{{ v.verification_time_ms|round(3) }} </td>
+          <td class="mono">{{ (v.proof_size_bytes/1024)|round(3) }} </td>
+          <td class="text-xs text-muted">{{ v.verified_at.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>
+            <a href="{{ url_for('insurer.verification_detail', ver_uid=v.verification_uid) }}"
+               class="btn btn-sm btn-outline">Détail</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:3rem">
+  <p class="font-serif" style="font-size:1.1rem;color:var(--ink3)">Aucune vérification effectuée.</p>
+  <a href="{{ url_for('insurer.verify') }}" class="btn btn-accent" style="margin-top:1rem">
+    ✓ Vérifier une preuve
+  </a>
+</div>
+{% endif %}
+{% endblock %}

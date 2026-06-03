@@ -1,0 +1,284 @@
+{# ═══════════════════════════════════════════════════════
+   MACROS — Sidebars pour chaque rôle
+   Usage : {% from "macros.html" import admin_sidebar with context %}
+           {{ admin_sidebar('dashboard') }}
+═══════════════════════════════════════════════════════ #}
+
+{% macro admin_sidebar(active='dashboard') %}
+<aside class="sidebar">
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon">ZK</div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-name">ZK <span>Medical</span></div>
+      <div class="sidebar-brand-sub">Preuves ZK médicales</div>
+    </div>
+  </div>
+
+  <div class="sidebar-role">Administration système</div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Vue globale</div>
+
+    <div class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+      <a href="{{ url_for('admin.dashboard') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        Tableau de bord
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'metrics' %}active{% endif %}">
+      <a href="{{ url_for('admin.metrics') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </span>
+        Métriques ZK
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Gestion</div>
+
+    <div class="nav-item {% if active == 'pending' %}active{% endif %}">
+      <a href="{{ url_for('admin.pending_users') }}"
+         style="display:flex;align-items:center;justify-content:space-between;gap:0;">
+        <span style="display:flex;align-items:center;gap:0.7rem;">
+          <span class="nav-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+            </svg>
+          </span>
+          Demandes
+        </span>
+        {% if pending_count is defined and pending_count > 0 %}
+          <span class="nav-badge">{{ pending_count }}</span>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'users' %}active{% endif %}">
+      <a href="{{ url_for('admin.users_list') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        Utilisateurs
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'hospitals' %}active{% endif %}">
+      <a href="{{ url_for('admin.hospitals_list') }}">
+        <span class="nav-icon">🏥</span>
+        Hôpitaux
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'insurers' %}active{% endif %}">
+      <a href="{{ url_for('admin.insurers_list') }}">
+        <span class="nav-icon">🛡️</span>
+        Assureurs
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Preuves ZK</div>
+
+    <div class="nav-item {% if active == 'proofs' %}active{% endif %}">
+      <a href="{{ url_for('admin.proofs_list') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        Toutes les preuves
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'logs' %}active{% endif %}">
+      <a href="{{ url_for('admin.audit_logs') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </span>
+        Journal d'audit
+      </a>
+    </div>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">⚙</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-email">{{ current_user.email }}</div>
+        <div class="sidebar-user-role">Administrateur</div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout">Quitter</a>
+    </div>
+  </div>
+</aside>
+{% endmacro %}
+
+
+{% macro hospital_sidebar(hospital, active='dashboard') %}
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon">ZK</div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-name">ZK <span>Medical</span></div>
+      <div class="sidebar-brand-sub">Prouveur ZK</div>
+    </div>
+  </div>
+
+  <div class="sidebar-role">{{ hospital.nom }}</div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Accueil</div>
+
+    <div class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+      <a href="{{ url_for('hospital.dashboard') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        Tableau de bord
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Patients</div>
+
+    <div class="nav-item {% if active == 'patients' %}active{% endif %}">
+      <a href="{{ url_for('hospital.patients_list') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </span>
+        Mes patients
+      </a>
+    </div>
+
+    <div class="nav-item">
+      <a href="{{ url_for('hospital.patient_new') }}">
+        <span class="nav-icon">➕</span>
+        Nouveau patient
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Preuves ZK</div>
+
+    <div class="nav-item {% if active == 'generate' %}active{% endif %}">
+      <a href="{{ url_for('hospital.generate_proof') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        Générer une preuve
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'proofs' %}active{% endif %}">
+      <a href="{{ url_for('hospital.proofs_list') }}">
+        <span class="nav-icon">◈</span>
+        Mes preuves
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">🏥</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-email">{{ current_user.email }}</div>
+        <div class="sidebar-user-role">Hôpital</div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout">Quitter</a>
+    </div>
+  </div>
+</aside>
+{% endmacro %}
+
+
+{% macro insurer_sidebar(insurer, active='dashboard') %}
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon">ZK</div>
+    <div class="sidebar-brand-text">
+      <div class="sidebar-brand-name">ZK <span>Medical</span></div>
+      <div class="sidebar-brand-sub">Vérifieur ZK</div>
+    </div>
+  </div>
+
+  <div class="sidebar-role">{{ insurer.nom }}</div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Accueil</div>
+
+    <div class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+      <a href="{{ url_for('insurer.dashboard') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        Tableau de bord
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Vérifications</div>
+
+    <div class="nav-item {% if active == 'verify' %}active{% endif %}">
+      <a href="{{ url_for('insurer.verify') }}">
+        <span class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9,11 12,14 22,4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </span>
+        Vérifier une preuve
+      </a>
+    </div>
+
+    <div class="nav-item {% if active == 'verifications' %}active{% endif %}">
+      <a href="{{ url_for('insurer.verifications_list') }}">
+        <span class="nav-icon">◈</span>
+        Historique
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">🛡</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-email">{{ current_user.email }}</div>
+        <div class="sidebar-user-role">Assureur</div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout">Quitter</a>
+    </div>
+  </div>
+</aside>
+{% endmacro %}

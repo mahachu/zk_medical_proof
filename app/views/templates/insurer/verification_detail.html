@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "macros.html" import insurer_sidebar with context %}
+{% block title %}Résultat vérification — {{ insurer.nom }}{% endblock %}
+{% block sidebar %}{{ insurer_sidebar(insurer, 'verifications') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="{{ url_for('insurer.dashboard') }}">Assureur</a> /
+    <a href="{{ url_for('insurer.verifications_list') }}">Vérifications</a> /
+    {{ ver.verification_uid[:12] }}…
+  </div>
+  <h1 class="page-title">Résultat de vérification</h1>
+  <p class="page-subtitle">{{ ver.verified_at.strftime('%d/%m/%Y à %H:%M') }}</p>
+</div>
+
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Résultat global</div>
+    <div class="stat-value" style="font-size:1.2rem;{% if ver.is_valid %}color:var(--accent){% else %}color:var(--danger){% endif %}">
+      {% if ver.is_valid %}VALIDE{% else %}INVALIDE{% endif %}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Range Proof</div>
+    <div class="stat-value" style="font-size:1.2rem;{% if ver.range_proof_valid %}color:var(--accent){% else %}color:var(--danger){% endif %}">
+      {% if ver.range_proof_valid %}✓{% else %}✗{% endif %}
+    </div>
+    <div class="stat-sub">bits OR Sigma</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Knowledge Proof</div>
+    <div class="stat-value" style="font-size:1.2rem;{% if ver.knowledge_proof_valid %}color:var(--accent){% else %}color:var(--danger){% endif %}">
+      {% if ver.knowledge_proof_valid %}✓{% else %}✗{% endif %}
+    </div>
+    <div class="stat-sub">Schnorr + Fiat-Shamir</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Temps vérification</div>
+    <div class="stat-value">{{ ver.verification_time_ms|round(3) }}</div>
+    <div class="stat-sub">ms</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Détails de la vérification</div>
+    <table style="font-size:0.78rem;">
+      <tbody>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);width:45%;">UID vérification</td>
+            <td class="mono" style="font-size:0.62rem;">{{ ver.verification_uid }}</td></tr>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);">UID preuve</td>
+            <td class="mono" style="font-size:0.62rem;">{{ proof.proof_uid }}</td></tr>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);">Prédicat</td>
+            <td><code style="background:var(--accent-light);color:var(--accent);padding:0.1rem 0.4rem;border-radius:2px;">{{ proof.predicate }}</code></td></tr>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);">Prédicat satisfait</td>
+            <td>{% if ver.predicate_satisfied %}<span class="badge badge-success">Oui</span>{% else %}<span class="badge badge-danger">Non</span>{% endif %}</td></tr>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);">Taille preuve</td>
+            <td>{{ (ver.proof_size_bytes / 1024)|round(2) }} KB</td></tr>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);">Temps de vérification</td>
+            <td>{{ ver.verification_time_ms|round(3) }} ms</td></tr>
+        <tr><td style="padding:0.5rem 0;color:var(--ink3);">Vérifié le</td>
+            <td>{{ ver.verified_at.strftime('%d/%m/%Y à %H:%M') }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="background:var(--ink);color:#e8e4de;">
+    <div class="card-title" style="color:#a8e6c5;font-size:0.72rem;letter-spacing:0.1em;">CONTRÔLES EFFECTUÉS</div>
+    <div style="font-size:0.75rem;line-height:2;">
+      <div>{% if ver.range_proof_valid %}<span style="color:#a8e6c5;">✓</span>{% else %}<span style="color:#e57373;">✗</span>{% endif %} Décomposition binaire (Range Proof)</div>
+      <div>{% if ver.range_proof_valid %}<span style="color:#a8e6c5;">✓</span>{% else %}<span style="color:#e57373;">✗</span>{% endif %} Cohérence des engagements (C_w = Π C_i^2^i)</div>
+      <div>{% if ver.knowledge_proof_valid %}<span style="color:#a8e6c5;">✓</span>{% else %}<span style="color:#e57373;">✗</span>{% endif %} Knowledge Proof (Schnorr non-interactif)</div>
+      <div style="margin-top:1rem;color:#666;font-size:0.68rem;">ℹ La valeur réelle de T n'a jamais été transmise ni accédée.</div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:1rem;display:flex;gap:0.75rem;">
+  <a href="{{ url_for('insurer.verify') }}" class="btn btn-accent">⬡ Vérifier une autre preuve</a>
+  <a href="{{ url_for('insurer.verifications_list') }}" class="btn btn-outline">← Mes vérifications</a>
+</div>
+{% endblock %}

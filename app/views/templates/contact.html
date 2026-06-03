@@ -1,0 +1,544 @@
+{% extends "base.html" %}
+{% block title %}Contact — ZK Medical{% endblock %}
+
+{% block body %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0f1a14; --ink2: #2a3d30; --ink3: #6b7c72; --ink4: #9aaa9f;
+    --surface: #ffffff; --bg: #f4f3ef;
+    --accent: #2d6a4f; --accent2: #40916c; --accent3: #74c69d;
+    --accent-light: #d8f3dc;
+    --danger: #c1121f; --danger-lt: #fde8e8;
+    --warn: #b5670d; --warn-light: #fef3e2;
+    --border: #dcd9d1; --border2: #e8e5de;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+    --r: 8px; --r-lg: 14px;
+  }
+
+  html, body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100; background: var(--ink);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px;
+  }
+
+  .nav-brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; outline: none; }
+  .nav-brand:hover { text-decoration: none; }
+  .nav-brand * { text-decoration: none; }
+
+  .nav-brand-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: rgba(45,106,79,0.25); border: 1.5px solid rgba(116,198,157,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 0.8rem; color: var(--accent3);
+  }
+  .nav-brand-name { font-family: var(--serif); font-size: 1rem; font-weight: 700; color: #fff; }
+  .nav-brand-name span { color: var(--accent3); }
+  .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+  .nav-links a { padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.8rem; color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.15s, background 0.15s; }
+  .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.07); }
+  .nav-links a.active { color: var(--accent3); background: rgba(45,106,79,0.2); }
+  .nav-cta { padding: 0.45rem 1rem; background: var(--accent); color: #fff !important; border-radius: 6px; font-size: 0.78rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+  .nav-cta:hover { background: var(--accent2) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink); padding: 5rem 2rem 4rem;
+    text-align: center; position: relative; overflow: hidden;
+  }
+
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 70% at 15% 50%, rgba(45,106,79,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 85% 40%, rgba(64,145,108,0.15) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 600px; margin: 0 auto; }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.3rem 0.9rem; border-radius: 20px;
+    background: rgba(45,106,79,0.25); border: 1px solid rgba(116,198,157,0.3);
+    font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent3); margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: var(--serif); font-size: clamp(2rem, 4vw, 2.6rem);
+    font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 1rem;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--accent3); }
+
+  .hero p {
+    font-size: 0.9rem; color: rgba(255,255,255,0.45);
+    line-height: 1.8; max-width: 480px; margin: 0 auto;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    max-width: 1000px; margin: 0 auto;
+    padding: 4rem 2rem;
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    gap: 3rem; align-items: start;
+  }
+
+  /* ── LEFT: INFOS ── */
+  .info-col { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .info-section-title {
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  .info-section-title::before { content: ''; width: 16px; height: 1.5px; background: var(--accent); }
+
+  .info-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 1.5rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .info-card:hover { border-color: var(--accent3); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+
+  .info-card-icon {
+    font-size: 1.4rem; margin-bottom: 0.75rem; display: block;
+  }
+
+  .info-card-title {
+    font-family: var(--serif); font-size: 0.95rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 0.5rem;
+  }
+
+  .info-card-text { font-size: 0.8rem; color: var(--ink3); line-height: 1.7; }
+
+  .info-card-link {
+    display: inline-block; margin-top: 0.75rem;
+    font-size: 0.78rem; color: var(--accent); font-weight: 500;
+    text-decoration: none;
+    padding-bottom: 1px; transition: border-color 0.2s;
+  }
+
+  .info-card-link:hover { border-color: var(--accent); }
+
+  /* Context académique */
+  .academic-box {
+    background: var(--ink); border-radius: var(--r-lg);
+    padding: 1.5rem 1.75rem;
+  }
+
+  .academic-label {
+    font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(116,198,157,0.5); font-family: var(--mono); margin-bottom: 1rem;
+  }
+
+  .academic-item {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.78rem;
+  }
+
+  .academic-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .academic-item-label {
+    font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(116,198,157,0.5); min-width: 70px; margin-top: 1px;
+    font-family: var(--mono);
+  }
+
+  .academic-item-value { color: rgba(255,255,255,0.75); line-height: 1.5; }
+
+  /* ── RIGHT: FORMULAIRE ── */
+  .form-col {}
+
+  .form-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 2.5rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  .form-card-title {
+    font-family: var(--serif); font-size: 1.3rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 0.4rem;
+  }
+
+  .form-card-sub { font-size: 0.82rem; color: var(--ink3); margin-bottom: 2rem; line-height: 1.6; }
+
+  /* Type selector */
+  .type-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1.75rem; }
+
+  .type-btn {
+    padding: 0.7rem 0.5rem; border: 1.5px solid var(--border);
+    border-radius: var(--r); background: var(--bg);
+    cursor: pointer; text-align: center;
+    transition: all 0.2s; font-family: var(--sans);
+  }
+
+  .type-btn:hover { border-color: var(--accent3); background: var(--accent-light); }
+  .type-btn.active { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px rgba(45,106,79,0.1); }
+
+  .type-btn-icon { font-size: 1.1rem; margin-bottom: 0.2rem; display: block; }
+  .type-btn-label { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); }
+  .type-btn.active .type-btn-label { color: var(--accent); }
+
+  /* Form fields */
+  .field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+
+  .field label {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink2);
+  }
+
+  .field-wrap { position: relative; }
+
+  .field-icon {
+    position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--ink3);
+  }
+
+  .field-icon svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 0.7rem 0.9rem 0.7rem 2.6rem;
+    background: var(--bg); color: var(--ink);
+    border: 1.5px solid var(--border); border-radius: var(--r);
+    font-family: var(--sans); font-size: 0.88rem; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+
+  .field textarea { padding-left: 2.6rem; resize: vertical; min-height: 110px; line-height: 1.6; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,106,79,0.1); background: var(--surface); }
+  .field input::placeholder, .field textarea::placeholder { color: var(--ink4); }
+  .field select { -webkit-appearance: none; cursor: pointer; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* Submit */
+  .btn-submit {
+    width: 100%; padding: 0.9rem 1.5rem;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--r); font-family: var(--sans); font-size: 0.9rem;
+    font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    margin-top: 0.5rem; position: relative; overflow: hidden;
+  }
+
+  .btn-submit::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%); pointer-events: none; }
+  .btn-submit:hover { background: var(--accent2); box-shadow: 0 6px 20px rgba(45,106,79,0.3); transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); box-shadow: none; }
+
+  .btn-submit svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+  .btn-submit:hover svg { transform: translateX(3px); }
+
+  /* Alert */
+  .form-alert {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 1rem 1.1rem; border-radius: var(--r);
+    font-size: 0.82rem; line-height: 1.6; margin-bottom: 1.25rem;
+  }
+
+  .form-alert-success { background: var(--accent-light); border-left: 3px solid var(--accent); color: #1b4332; }
+  .form-alert-info { background: #e0f2fe; border-left: 3px solid #38bdf8; color: #0369a1; }
+
+  /* Divider */
+  .form-divider {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin: 1.5rem 0; font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3);
+  }
+
+  .form-divider::before, .form-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    background: var(--ink); border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 1.25rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  }
+
+  .footer-copy { font-size: 0.68rem; color: rgba(255,255,255,0.35); }
+  .footer-links { display: flex; align-items: center; gap: 1.5rem; }
+  .footer-links a { font-size: 0.68rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.15s; }
+  .footer-links a:hover { color: var(--accent3); }
+  .footer-badge { font-family: var(--mono); font-size: 0.6rem; color: var(--accent3); background: rgba(45,106,79,0.15); border: 1px solid rgba(45,106,79,0.3); padding: 0.25rem 0.6rem; border-radius: 4px; letter-spacing: 0.05em; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; gap: 2rem; padding: 2.5rem 1.25rem; }
+    .type-selector { grid-template-columns: repeat(3, 1fr); }
+    .top-nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .doc-footer { flex-direction: column; text-align: center; gap: 0.75rem; }
+    .hero { padding: 3.5rem 1.25rem 3rem; }
+    .form-card { padding: 1.75rem 1.25rem; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 1.75rem; }
+    .type-selector { gap: 0.35rem; }
+    .type-btn { padding: 0.55rem 0.3rem; }
+  }
+
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <a href="{{ url_for('auth.login') }}" class="nav-brand">
+    <div class="nav-brand-icon">ZK</div>
+    <div class="nav-brand-name">ZK <span>Medical</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="{{ url_for('auth.login') }}">Connexion</a>
+    <a href="{{ url_for('auth.register') }}">Inscription</a>
+    <a href="/documentation">Documentation</a>
+    <a href="/a-propos">À propos</a>
+    <a href="#" class="active">Contact</a>
+  </div>
+  <a href="{{ url_for('auth.login') }}" class="nav-cta">Accéder →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Nous contacter</div>
+    <h1>Une question sur le<br><em>système ZK Medical ?</em></h1>
+    <p>Accès, inscription, aspects techniques ou collaboration académique — nous sommes disponibles pour vous répondre.</p>
+  </div>
+</div>
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div style="max-width:1000px;margin:1.5rem auto 0;padding:0 2rem;">
+    {% for category, message in messages %}
+    <div class="flash-msg" style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem 1.1rem;
+            border-radius:8px;font-size:0.82rem;margin-bottom:0.75rem;
+            background:{% if category=='success' %}#d8f3dc{% else %}#fde8e8{% endif %};
+            border-left:3px solid {% if category=='success' %}#2d6a4f{% else %}#c1121f{% endif %};
+            color:{% if category=='success' %}#1b4332{% else %}#c1121f{% endif %};">
+  {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT -->
+  <div class="info-col">
+    <div>
+      <div class="info-section-title">Informations</div>
+    </div>
+
+    <div class="info-card">
+      <span class="info-card-icon">🔐</span>
+      <div class="info-card-title">Accès au système</div>
+      <div class="info-card-text">Les comptes hôpital et assureur sont soumis à validation administrative. Créez votre compte via le formulaire d'inscription, un administrateur activera votre accès.</div>
+      <a href="{{ url_for('auth.register') }}" class="info-card-link">Créer un compte →</a>
+    </div>
+
+    <div class="info-card">
+      <span class="info-card-icon">📖</span>
+      <div class="info-card-title">Documentation technique</div>
+      <div class="info-card-text">Architecture cryptographique, protocoles ZK implémentés, paramètres du groupe et métriques de performance — tout est détaillé dans la documentation.</div>
+      <a href="/documentation" class="info-card-link">Consulter la doc →</a>
+    </div>
+
+    <div class="info-card">
+      <span class="info-card-icon">🎓</span>
+      <div class="info-card-title">Contexte académique</div>
+      <div class="info-card-text">Ce projet est développé dans le cadre de l' UE Projet de Sécurité en Master 1 Informatique. Il a pour vocation pédagogique d'illustrer les preuves ZK appliquées à la santé.</div>
+    </div>
+
+    <div class="academic-box">
+      <div class="academic-label">Fiche du projet</div>
+      <div class="academic-item">
+        <div class="academic-item-label">Sujet</div>
+        <div class="academic-item-value">Confidentialité dans les preuves ZK appliquées aux données médicales</div>
+      </div>
+      <div class="academic-item">
+        <div class="academic-item-label">Niveau</div>
+        <div class="academic-item-value">Master 1 Informatique — Sécurité</div>
+      </div>
+      <div class="academic-item">
+        <div class="academic-item-label">Prédicat</div>
+        <div class="academic-item-value">T &lt; 38°C — Range Proof binaire</div>
+      </div>
+      <div class="academic-item">
+        <div class="academic-item-label">Crypto</div>
+        <div class="academic-item-value">Pedersen · Sigma · Fiat-Shamir · RFC 3526 Group 14</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FORMULAIRE -->
+  <div class="form-col">
+    <div class="form-card">
+
+      <h2 class="form-card-title">Envoyer un message</h2>
+      <p class="form-card-sub">Sélectionnez le type de demande puis remplissez le formulaire.</p>
+
+      <div id="success-msg" style="display:none;" class="form-alert form-alert-success">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px"><polyline points="20,6 9,17 4,12"/></svg>
+        <div><strong>Message envoyé !</strong><br>Nous vous répondrons dans les plus brefs délais.</div>
+      </div>
+
+      <!-- Type selector -->
+      <div class="type-selector" id="typeTabs">
+        <button type="button" class="type-btn active" data-type="acces">
+          <span class="type-btn-icon">🔐</span>
+          <span class="type-btn-label">Accès</span>
+        </button>
+        <button type="button" class="type-btn" data-type="technique">
+          <span class="type-btn-icon">⚙️</span>
+          <span class="type-btn-label">Technique</span>
+        </button>
+        <button type="button" class="type-btn" data-type="autre">
+          <span class="type-btn-icon">💬</span>
+          <span class="type-btn-label">Autre</span>
+        </button>
+      </div>
+
+      <form id="contact-form" method="POST" action="/contact" onsubmit="handleSubmit(event)">
+
+        <input type="hidden" id="msg-type" name="msg-type" value="acces">
+
+        <div class="field-row">
+          <div class="field">
+            <label for="prenom">Prénom</label>
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input type="text" id="prenom" name="prenom" placeholder="Jean" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="nom">Nom</label>
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input type="text" id="nom" name="nom" placeholder="Dupont" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Adresse email</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input type="email" id="email" name="email" placeholder="contact@domaine.cm" required>
+          </div>
+        </div>
+
+        <div class="field" id="role-field">
+          <label for="role">Rôle concerné</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <select id="role" name="role">
+              <option value="">— Sélectionner votre rôle —</option>
+              <option value="hospital">🏥 Hôpital (Prouveur ZK)</option>
+              <option value="insurer">🛡️ Assureur (Vérifieur ZK)</option>
+              <option value="etudiant">🎓 Étudiant / Chercheur</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="sujet">Sujet</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+            </span>
+            <input type="text" id="sujet" name="sujet" placeholder="Ex : Demande d'accès — Hôpital Central" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <div class="field-wrap">
+            <span class="field-icon" style="top:1rem;transform:none;">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <textarea id="message" name="message"
+                      placeholder="Décrivez votre demande en détail…" required></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          Envoyer le message
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="doc-footer">
+  <div class="footer-copy">© 2026 ZK Medical Proof — UE Projet — Informatique M1 Sécurité</div>
+  <div class="footer-links">
+    <a href="/documentation">Documentation</a>
+    <a href="/a-propos">À propos</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-badge">RFC 3526 · 2048-bits</div>
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.type-btn');
+  const roleField = document.getElementById('role-field');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('msg-type').value = tab.dataset.type;
+      roleField.style.display = tab.dataset.type === 'acces' ? '' : 'none';
+    });
+  });
+
+  function handleSubmit(e) {
+    const btn = document.getElementById('submit-btn');
+    btn.innerHTML = '<svg style="animation:spin 0.8s linear infinite" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Envoi en cours…';
+    btn.disabled = true;
+
+  }
+
+  // Auto-dismiss flash messages
+  setTimeout(() => {
+    document.querySelectorAll('.flash-msg').forEach(a => {
+      a.style.transition = 'opacity 0.4s, transform 0.4s';
+      a.style.opacity = '0';
+      a.style.transform = 'translateY(-4px)';
+      setTimeout(() => a.remove(), 400);
+    });
+  }, 4500);
+</script>
+
+{% endblock %}
