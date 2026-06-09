@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "macros.html" import insurer_sidebar with context %}
+{% block title %}Modifier un assuré — {{ insurer.nom }}{% endblock %}
+{% block sidebar %}{{ insurer_sidebar(insurer, 'assures') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="{{ url_for('insurer.dashboard') }}">Dashboard</a> /
+    <a href="{{ url_for('insurer.assures_list') }}">Assurés</a> /
+    Modifier
+  </div>
+  <h1 class="page-title">Modifier un assuré</h1>
+  <p class="page-subtitle">Mettez à jour les informations de {{ sub.full_name() }}</p>
+</div>
+
+<div style="max-width:500px;">
+  <div class="card">
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="form-group">
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" name="nom"
+               value="{{ request.form.get('nom', sub.nom) }}"
+               placeholder="Ex : DUPONT" required>
+      </div>
+
+      <div class="form-group">
+        <label for="prenom">Prénom</label>
+        <input type="text" id="prenom" name="prenom"
+               value="{{ request.form.get('prenom', sub.prenom) }}"
+               placeholder="Ex : Jean" required>
+      </div>
+
+      <div class="form-group">
+        <label for="numero_cni">
+          Numéro CNI
+        </label>
+        <input type="text" id="numero_cni" name="numero_cni"
+              value="{{ request.form.get('numero_cni', sub.numero_cni or '') }}"
+              placeholder="Ex : 123456789" required>
+      </div>
+
+      <div class="form-group">
+        <label for="numero_contrat">
+          Numéro de contrat
+          <span class="text-muted" style="font-weight:400;">(optionnel)</span>
+        </label>
+        <input type="text" id="numero_contrat" name="numero_contrat"
+               value="{{ request.form.get('numero_contrat', sub.numero_contrat or '') }}"
+               placeholder="Ex : CNPS-2024-00123">
+      </div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+        <button type="submit" class="btn btn-accent">
+          ✓ Enregistrer les modifications
+        </button>
+        <a href="{{ url_for('insurer.assures_list') }}" class="btn btn-outline">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

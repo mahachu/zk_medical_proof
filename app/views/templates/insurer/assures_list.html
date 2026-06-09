@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "macros.html" import insurer_sidebar with context %}
+{% block title %}Mes assurés — {{ insurer.nom }}{% endblock %}
+{% block sidebar %}{{ insurer_sidebar(insurer, 'assures') }}{% endblock %}
+
+{% block content %}
+<div class="page-header flex items-center justify-between">
+  <div>
+    <div class="breadcrumb">
+      <a href="{{ url_for('insurer.dashboard') }}">Dashboard</a> / Assurés
+    </div>
+    <h1 class="page-title">Mes assurés</h1>
+    <p class="page-subtitle">
+      {{ assures|length }} assuré(s) enregistré(s) chez {{ insurer.nom }}
+    </p>
+  </div>
+  <a href="{{ url_for('insurer.assure_new') }}" class="btn btn-accent">
+    + Enregistrer un assuré
+  </a>
+</div>
+
+{% if assures %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Id Souscription</th>  
+          <th>Nom complet</th>
+          <th>N° CNI</th>
+          <th>N° Contrat</th>
+          <th>Enregistré le</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in assures %}
+        <tr>
+            <td><strong>{{ sub.id }}</strong></td>
+            <td><strong>{{ sub.full_name() }}</strong></td>
+            <td class="mono text-sm">{{ sub.numero_cni or '—' }}</td>
+            <td class="mono text-sm">{{ sub.numero_contrat or '—' }}</td>
+            <td class="text-xs text-muted">
+                {{ sub.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </td>
+            
+            <td>
+                <div style="display:flex;gap:0.5rem;align-items:center;">
+                    <a href="{{ url_for('insurer.assure_edit', sub_id=sub.id) }}"
+                    class="btn btn-sm btn-outline"
+                    style="height:32px;padding:0 0.75rem;display:inline-flex;align-items:center;box-sizing:border-box;">
+                        Renommer
+                    </a>
+                    <form method="POST"
+                        action="{{ url_for('insurer.assure_delete', sub_id=sub.id) }}"
+                        onsubmit="return confirm('Retirer {{ sub.full_name() }} de vos assurés ?')"
+                        style="margin:0;padding:0;line-height:0;">
+                        <button type="submit" class="btn btn-sm btn-outline btn_rejet"
+                                style="height:32px;padding:0 0.75rem;display:inline-flex;align-items:center;box-sizing:border-box;color:var(--danger);border-color:var(--danger);">
+                            Retirer
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;">
+  <div style="font-size:2.5rem;opacity:0.3;margin-bottom:1rem;">👥</div>
+  <p class="text-muted" style="margin-bottom:1.5rem;">
+    Aucun assuré enregistré pour le moment.
+  </p>
+  <a href="{{ url_for('insurer.assure_new') }}" class="btn btn-accent">
+    + Enregistrer le premier assuré
+  </a>
+</div>
+{% endif %}
+{% endblock %}

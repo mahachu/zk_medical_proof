@@ -1,8 +1,9 @@
 """
 Insurer Views — Vérifieur ZK
- 
+
 Blueprint Flask gérant toutes les routes de l'interface assureur :
-tableau de bord, vérification des preuves ZK et téléchargement.
+tableau de bord, gestion des assurés, vérification des preuves ZK
+et téléchargement.
 """
 import json
 import io
@@ -13,8 +14,10 @@ from flask import (Blueprint, render_template, request,
 from flask_login import login_required, current_user
 from ..models.db import db
 from ..models.proof import Proof
+from ..models.patient import Patient
 from ..models.verification import Verification
 from ..models.audit_log import AuditLog
+from ..models.subscription import Subscription
 from ..utils.bulletproofs_handler import BulletproofsHandler
 from ..utils.decimal_encoder import deserialize_proof
 from ..utils.metrics_collector import get_collector
@@ -24,44 +27,27 @@ _handler = BulletproofsHandler()
 
 
 def _require_insurer(f):
-    """Décorateur : restreint l'accès aux utilisateurs ayant le rôle ``insurer``.
- 
-    Redirige vers la page de connexion avec un message d'erreur si l'utilisateur
-    n'est pas authentifié ou n'a pas le rôle requis.
- 
-    Args:
-        f (callable): La fonction de vue à protéger.
- 
-    Returns:
-        callable: La fonction de vue enveloppée avec la vérification du rôle
-        et ``login_required``.
     """
-
+    Décorateur pour restreindre l'accès aux utilisateurs connectés 
+    possédant le rôle d'assureur.
+    """
     from functools import wraps
     @wraps(f)
     def wrapper(*args, **kwargs):
+        """
+        Vérifie l'authentification et le rôle avant d'autoriser l'accès à la route.
+        """
         if not current_user.is_authenticated or current_user.role != 'insurer':
-            flash('Accès réservé à l\'assureur.', 'danger')
+            flash("Accès réservé à l'assureur.", 'danger')
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return login_required(wrapper)
 
 
 def _log(action, desc, resource_type=None, resource_id=None):
-    """Enregistre une entrée dans le journal d'audit.
- 
-    Crée et persiste un ``AuditLog`` associé à l'utilisateur courant,
-    à son adresse IP et à la ressource concernée.
- 
-    Args:
-        action (str): Code de l'action effectuée (ex. ``'verify_proof'``).
-        desc (str): Description lisible de l'action.
-        resource_type (str, optional): Type de la ressource concernée
-            (ex. ``'verification'``, ``'proof'``).
-        resource_id (optional): Identifiant de la ressource, converti en
-            chaîne si fourni.
     """
-
+    Enregistre une action effectuée par l'assureur dans les journaux d'audit.
+    """
     log = AuditLog(
         actor_user_id=current_user.id,
         actor_role='insurer',
@@ -75,18 +61,15 @@ def _log(action, desc, resource_type=None, resource_id=None):
     db.session.commit()
 
 
+# ── Dashboard ─────────────────────────────────────────────────────────────────
+
 @insurer_bp.route('/')
 @insurer_bp.route('/dashboard')
 @_require_insurer
 def dashboard():
-    """Affiche le tableau de bord de l'assureur.
- 
-    Présente les 10 vérifications les plus récentes, les compteurs globaux
-    (total et valides) et la liste des preuves disponibles non encore
-    vérifiées par cet assureur.
- 
-    Returns:
-        Response: Rendu du template ``insurer/dashboard.html``.
+    """
+    Affiche le tableau de bord de l'assureur contenant les statistiques clés,
+    les dernières vérifications et les preuves disponibles non encore vérifiées.
     """
     ins = current_user.insurer
     verifications = (Verification.query
@@ -95,8 +78,8 @@ def dashboard():
                      .limit(10).all())
     total_ver = Verification.query.filter_by(insurer_id=ins.id).count()
     valid_ver = Verification.query.filter_by(insurer_id=ins.id, is_valid=True).count()
+    total_assures = Subscription.query.filter_by(insurer_id=ins.id).count()
 
-    # Preuves envoyées à CET assureur, pas encore vérifiées par lui
     verified_proof_ids = [v.proof_id for v in
                           Verification.query.filter_by(insurer_id=ins.id).all()]
     query = Proof.query.filter_by(target_insurer_id=ins.id)
@@ -105,32 +88,121 @@ def dashboard():
     available_proofs = query.order_by(Proof.generated_at.desc()).all()
 
     return render_template('insurer/dashboard.html',
-                           insurer=ins, verifications=verifications,
-                           total_ver=total_ver, valid_ver=valid_ver,
+                           insurer=ins,
+                           verifications=verifications,
+                           total_ver=total_ver,
+                           valid_ver=valid_ver,
+                           total_assures=total_assures,
                            available_proofs=available_proofs)
 
+
+# ── Gestion des assurés ───────────────────────────────────────────────────────
+@insurer_bp.route('/assures')
+@_require_insurer
+def assures_list():
+    ins = current_user.insurer
+    assures = (Subscription.query
+               .filter_by(insurer_id=ins.id)
+               .order_by(Subscription.created_at.desc())
+               .all())
+    return render_template('insurer/assures_list.html',
+                           insurer=ins,
+                           assures=assures)
+
+
+@insurer_bp.route('/assures/new', methods=['GET', 'POST'])
+@_require_insurer
+def assure_new():
+    ins = current_user.insurer
+    error = None
+
+    if request.method == 'POST':
+        nom = request.form.get('nom', '').strip().upper()
+        prenom = request.form.get('prenom', '').strip().upper()
+        numero_contrat = request.form.get('numero_contrat', '').strip().upper() or None
+        numero_cni = request.form.get('numero_cni', '').strip().upper()
+
+        if not nom or not prenom or not numero_cni:
+            error = "Le nom, le prénom et le numéro CNI sont obligatoires."
+        else:
+            sub = Subscription(
+                insurer_id=ins.id,
+                nom=nom,
+                prenom=prenom,
+                numero_contrat=numero_contrat,
+                numero_cni=numero_cni
+            )
+            db.session.add(sub)
+            db.session.commit()
+            _log('add_assure',
+                 f"Nouvel assuré : {prenom} {nom}",
+                 'subscription', sub.id)
+            flash(f'✓ {prenom} {nom} enregistré(e) comme assuré(e).', 'success')
+            return redirect(url_for('insurer.assures_list'))
+
+    return render_template('insurer/assure_new.html',
+                           insurer=ins,
+                           error=error)
+
+
+@insurer_bp.route('/assures/<int:sub_id>/delete', methods=['POST'])
+@_require_insurer
+def assure_delete(sub_id):
+    ins = current_user.insurer
+    sub = Subscription.query.filter_by(id=sub_id, insurer_id=ins.id).first_or_404()
+    nom_complet = sub.full_name()
+    db.session.delete(sub)
+    db.session.commit()
+    _log('remove_assure',
+         f"Assuré retiré : {nom_complet}",
+         'subscription', sub_id)
+    flash(f'Assuré(e) {nom_complet} retiré(e).', 'info')
+    return redirect(url_for('insurer.assures_list'))
+
+
+@insurer_bp.route('/assures/<int:sub_id>/edit', methods=['GET', 'POST'])
+@_require_insurer
+def assure_edit(sub_id):
+    ins = current_user.insurer
+    sub = Subscription.query.filter_by(id=sub_id, insurer_id=ins.id).first_or_404()
+    error = None
+
+    if request.method == 'POST':
+        nom = request.form.get('nom', '').strip().upper()
+        prenom = request.form.get('prenom', '').strip().upper()
+        numero_contrat = request.form.get('numero_contrat', '').strip().upper() or None
+        numero_cni = request.form.get('numero_cni', '').strip().upper()
+
+        if not nom or not prenom or not numero_cni:
+            error = "Le nom, le prénom et le numéro CNI sont obligatoires."
+        else:
+            sub.nom = nom
+            sub.prenom = prenom
+            sub.numero_contrat = numero_contrat
+            sub.numero_cni = numero_cni
+            db.session.commit()
+            _log('edit_assure',
+                 f"Assuré modifié : {prenom} {nom}",
+                 'subscription', sub.id)
+            flash(f'✓ {prenom} {nom} mis à jour.', 'success')
+            return redirect(url_for('insurer.assures_list'))
+
+    return render_template('insurer/assure_edit.html',
+                           insurer=ins,
+                           sub=sub,
+                           error=error)
+
+# ── Vérification des preuves ──────────────────────────────────────────────────
 
 @insurer_bp.route('/verify', methods=['GET', 'POST'])
 @_require_insurer
 def verify():
-    """Vérifie une preuve ZK soumise par l'assureur.
- 
-    GET  : Affiche le formulaire de vérification avec les preuves disponibles.
-    POST : Recherche la preuve par ``proof_uid``, appelle
-           ``BulletproofsHandler.verify``, persiste le résultat dans
-           ``Verification``, enregistre les métriques et journalise l'action.
-           En cas d'exception lors de la vérification, un résultat invalide
-           est tout de même persisté avec le message d'erreur.
- 
-    Returns:
-        Response: Redirection vers ``verification_detail`` en cas de succès,
-        rendu du formulaire avec erreur sinon.
     """
-
+    Gère la réception et le traitement de la vérification cryptographique d'une preuve ZK.
+    """
     ins = current_user.insurer
     error = None
 
-    # Preuves envoyées à cet assureur uniquement
     verified_proof_ids = [v.proof_id for v in
                           Verification.query.filter_by(insurer_id=ins.id).all()]
     query = Proof.query.filter_by(target_insurer_id=ins.id)
@@ -176,6 +248,7 @@ def verify():
             )
             db.session.add(ver)
             db.session.commit()
+
             if result['is_valid']:
                 flash('✓ Preuve VALIDE — le prédicat température < 38°C est confirmé.', 'success')
             else:
@@ -201,22 +274,17 @@ def verify():
             return redirect(url_for('insurer.verification_detail', ver_uid=ver_uid))
 
     return render_template('insurer/verify.html',
-                           insurer=ins, available_proofs=available_proofs, error=error)
+                           insurer=ins,
+                           available_proofs=available_proofs,
+                           error=error)
 
 
 @insurer_bp.route('/verification/<ver_uid>')
 @_require_insurer
 def verification_detail(ver_uid):
-    """Affiche le détail d'une vérification et la preuve associée.
- 
-    Args:
-        ver_uid (str): Identifiant unique de la vérification.
- 
-    Returns:
-        Response: Rendu du template ``insurer/verification_detail.html``.
-        Retourne 404 si la vérification n'appartient pas à l'assureur courant.
     """
-
+    Affiche le rapport détaillé d'une vérification de preuve spécifique.
+    """
     ins = current_user.insurer
     ver = Verification.query.filter_by(
         verification_uid=ver_uid, insurer_id=ins.id
@@ -229,10 +297,8 @@ def verification_detail(ver_uid):
 @insurer_bp.route('/verifications')
 @_require_insurer
 def verifications_list():
-    """Affiche l'historique complet des vérifications de l'assureur.
- 
-    Returns:
-        Response: Rendu du template ``insurer/verifications_list.html``.
+    """
+    Affiche l'historique complet des vérifications réalisées par l'assureur.
     """
     ins = current_user.insurer
     vers = (Verification.query.filter_by(insurer_id=ins.id)
@@ -244,19 +310,9 @@ def verifications_list():
 @insurer_bp.route('/proof/download/<proof_uid>')
 @_require_insurer
 def download_proof(proof_uid):
-    """Télécharge une preuve ZK au format JSON.
- 
-    Accessible uniquement par l'assureur destinataire de la preuve.
-    Journalise le téléchargement avant de retourner le fichier.
- 
-    Args:
-        proof_uid (str): Identifiant unique de la preuve.
- 
-    Returns:
-        Response: Fichier JSON en pièce jointe (``application/json``).
-        Retourne 404 si la preuve n'est pas destinée à l'assureur courant.
     """
-
+    Permet le téléchargement au format JSON des données brutes d'une preuve ZK spécifique.
+    """
     ins = current_user.insurer
     proof = Proof.query.filter_by(
         proof_uid=proof_uid,
@@ -267,7 +323,7 @@ def download_proof(proof_uid):
     json_bytes = json.dumps(proof_data, indent=2, ensure_ascii=False).encode('utf-8')
 
     _log('download_proof',
-         f"Téléchargement de la preuve  {proof_uid[:8]}…",
+         f"Téléchargement de la preuve {proof_uid[:8]}…",
          'proof', proof_uid)
 
     return send_file(

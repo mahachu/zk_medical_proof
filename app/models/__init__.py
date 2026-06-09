@@ -6,3 +6,4 @@ from .patient import Patient
 from .proof import Proof
 from .verification import Verification
 from .audit_log import AuditLog
+from .subscription import Subscription

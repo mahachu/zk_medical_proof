@@ -15,6 +15,7 @@ class Patient(db.Model):
     # Température stockée en string pour conserver la précision décimale exacte
     temperature = db.Column(db.String(20), nullable=True)  # ex: "37.25", "38.1"
     hospital_id = db.Column(db.Integer, db.ForeignKey('hospitals.id'), nullable=False)
+    numero_cni = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
                            onupdate=datetime.utcnow, nullable=False)
@@ -35,6 +36,7 @@ class Patient(db.Model):
             'nom': self.nom,
             'prenom': self.prenom,
             'age': self.age,
+            'numero_cni': self.numero_cni,
             'temperature': self.temperature,
             'hospital_id': self.hospital_id,
             'created_at': self.created_at.isoformat(),

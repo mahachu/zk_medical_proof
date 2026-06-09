@@ -19,7 +19,7 @@
       <thead>
         <tr>
           <th>UID Vérification</th><th>UID Preuve</th>
-          <th>Nom Complet Patient</th><th>Hôpital</th>
+          <th>Nom Complet Patient</th><th>N° CNI</th><th>Hôpital</th>
           <th>Résultat Vérif.</th><th>Range Proof</th><th>Sigma</th>
           <th>Temps (ms)</th><th>Taille(KB)</th><th>Date Vérif.</th><th>Actions</th>
         </tr>
@@ -30,6 +30,7 @@
           <td class="mono text-xs">{{ v.verification_uid[:12] }}…</td>
           <td class="mono text-xs">{{ v.proof.proof_uid[:12] }}…</td>
           <td class="mono text-xs">{{ v.proof.patient.full_name() if v.proof.patient else '—'}}</td>
+          <td class="mono text-xs">{{ v.proof.patient.numero_cni }}</td>
           <td class="mono text-xs">{{ v.proof.hospital.nom if v.proof.hospital else '—' }}</td>
           <td>
             <span class="badge {% if v.is_valid %}badge-success{% else %}badge-danger{% endif %}">

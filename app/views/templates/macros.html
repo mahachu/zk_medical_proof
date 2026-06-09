@@ -268,7 +268,26 @@
         Historique
       </a>
     </div>
+
+
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">Assurés</div>
+
+    <div class="nav-item {% if active == 'assures' %}active{% endif %}">
+      <a href="{{ url_for('insurer.assures_list') }}">
+        <span class="nav-icon">👥</span>
+        Mes assurés
+      </a>
+    </div>
+
+    <div class="nav-item">
+      <a href="{{ url_for('insurer.assure_new') }}">
+        <span class="nav-icon">➕</span>
+        Enregistrer un assuré
+      </a>
+    </div>
   </nav>
+
 
   <div class="sidebar-footer">
     <div class="sidebar-user">
